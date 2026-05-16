@@ -23,7 +23,6 @@ TexturedBackground {{
 }}
 
 TexturedBackgroundLight {{
-  texture "noon_cloudy_countryside"
   castShadows FALSE
 }}
 
@@ -148,6 +147,10 @@ Pioneer3at {{
       rotation 0 1 0 0.25
       width 320
       height 240
+    }}
+    Display {{
+      width 320
+      height 320
     }}
   ]
 }}

@@ -251,12 +251,12 @@ def place_goals_on_dead_ends(
 
 
 def generate_decision_heavy_maze(
-    width: int = 51,
-    height: int = 51,
+    width: int = 21,
+    height: int = 21,
     seed: int | None = None,
     loop_ratio: float = 0.10,
     danger_ratio: float = 0.10,
-    goal_ratio: float = 0.05,
+    goal_ratio: float = 0.1,
 ) -> list[list[str]]:
 
     maze = generate_prim_maze(
