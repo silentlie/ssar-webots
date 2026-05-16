@@ -19,6 +19,7 @@ WorldInfo {{
 Viewpoint {{
   orientation 0.4 0.4 -1 1.7
   position {view_x} {view_y} {view_z}
+  follow "Scout"
 }}
 
 TexturedBackground {{

@@ -30,9 +30,10 @@ class Navigation:
     ALIGN_PARALLEL_STABLE_STEPS = 30
     ALIGN_PARALLEL_INVALID_LIMIT = 30
     PARALLEL_FORWARD_DEADBAND = 5.0
-    PARALLEL_FORWARD_KP = 0.01
+    PARALLEL_FORWARD_KP = 0.02
     MAX_PARALLEL_FORWARD_CORRECTION = 0.5
-    CENTER_THRESHOLD = 5.0
+    SIDE_CENTER_THRESHOLD = 30.0
+    CENTER_MOVE_THRESHOLD = 3.0
     ALIGN_CENTER_INVALID_LIMIT = 30
 
     def __init__(
@@ -41,7 +42,6 @@ class Navigation:
         odometry: Odometry,
         grid_map: GridMap,
         sensors: Sensors,
-        center_threshold: float = 30.0,
         debug: bool = False,
     ) -> None:
         self.wheels = wheels
@@ -49,7 +49,6 @@ class Navigation:
         self.grid_map = grid_map
         self.sensors = sensors
 
-        self.center_threshold = center_threshold
         self.debug = debug
 
         self.active_command: NavigationCommand | None = None
@@ -100,12 +99,13 @@ class Navigation:
         if self.active_command == NavigationCommand.RECOVER:
             if self.odometry.recovery_complete():
                 self._debug(
-                    "Recovery complete; "
+                    "Recovery complete; starting ALIGN_PARALLEL; "
                     f"position={self.grid_map.robot_position}, "
                     f"direction={self.grid_map.robot_direction.name}"
                 )
+
                 self.wheels.stop()
-                self.active_command = None
+                self._start_parallel_alignment()
                 return
 
             self._proceed_recovery()
@@ -141,6 +141,7 @@ class Navigation:
         return True
 
     def _start_parallel_alignment(self) -> None:
+        self.wheels.stop()
         self.align_parallel_stable_steps = 0
         self.align_parallel_invalid_steps = 0
         self.active_command = NavigationCommand.ALIGN_PARALLEL
@@ -165,7 +166,7 @@ class Navigation:
             self._start_parallel_alignment()
             return
 
-        if abs(diff) <= self.center_threshold:
+        if abs(diff) <= self.SIDE_CENTER_THRESHOLD:
             self._debug(f"Center alignment not needed; left_right_diff={diff:.2f}")
             self._start_parallel_alignment()
             return
@@ -178,7 +179,7 @@ class Navigation:
 
         self._debug(
             f"Started ALIGN_CENTER; left_right_diff={diff:.2f}, "
-            f"threshold={self.center_threshold:.2f}"
+            f"threshold={self.SIDE_CENTER_THRESHOLD:.2f}"
         )
 
     def _proceed_command(self) -> None:
@@ -329,7 +330,7 @@ class Navigation:
 
         self._debug(f"Center alignment front_back_diff={diff:.2f}")
 
-        if abs(diff) <= self.center_threshold:
+        if abs(diff) <= self.CENTER_MOVE_THRESHOLD:
             self.wheels.stop()
             self.odometry.start_action()
             self.active_command = NavigationCommand.ALIGN_CENTER_TURN_BACK

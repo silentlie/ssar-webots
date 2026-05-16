@@ -12,6 +12,7 @@ WorldInfo {
 Viewpoint {
   orientation 0.4 0.4 -1 1.7
   position 0 50 50
+  follow "Scout"
 }
 
 TexturedBackground {
