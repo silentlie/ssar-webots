@@ -1,3 +1,5 @@
+"""Generate symbolic maze layouts before they are converted to Webots worlds."""
+
 import random
 
 WALL = "#"
@@ -10,6 +12,7 @@ DANGER = "R"
 def generate_prim_maze(
     width: int, height: int, seed: int | None = None
 ) -> list[list[str]]:
+    """Generate a perfect maze using randomized Prim-style frontier carving."""
     if width % 2 == 0:
         width += 1
     if height % 2 == 0:
@@ -69,6 +72,7 @@ def carve_loops(
     loop_ratio: float = 0.15,
     seed: int | None = None,
 ) -> None:
+    """Remove selected internal walls so exploration has more route choices."""
     rng = random.Random(seed)
 
     height = len(maze)
@@ -207,6 +211,7 @@ def place_dangers_on_walls(
     danger_ratio: float = 0.10,
     seed: int | None = None,
 ) -> list[tuple[int, int]]:
+    """Replace some wall cells with danger markers in the symbolic maze."""
 
     rng = random.Random(seed)
 
@@ -231,6 +236,7 @@ def place_goals_on_dead_ends(
     goal_ratio: float = 0.01,
     seed: int | None = None,
 ) -> list[tuple[int, int]]:
+    """Place goals on dead ends so reaching them requires deliberate search."""
 
     rng = random.Random(seed)
 
@@ -258,6 +264,7 @@ def generate_decision_heavy_maze(
     danger_ratio: float = 0.10,
     goal_ratio: float = 0.1,
 ) -> list[list[str]]:
+    """Build the default search-and-rescue maze used by world.py."""
 
     maze = generate_prim_maze(
         width=width,

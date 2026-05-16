@@ -1,3 +1,5 @@
+"""Webots entry point for the autonomous Pioneer 3AT controller."""
+
 from camera import CameraController
 from controller import Robot
 from displayController import DisplayController
@@ -29,6 +31,7 @@ if DEBUG:
 while robot.step(timestep) != -1:
     elapsed_time = robot.getTime() - start_time
     if elapsed_time < START_DELAY_SECONDS:
+        # Let enabled Webots sensors produce stable first readings before motion.
         wheels.stop()
         continue
     explorer.update()

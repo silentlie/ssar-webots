@@ -5,6 +5,8 @@ from utils import clamp
 
 
 class Wheels:
+    """Motor helper for the Pioneer 3AT four-wheel differential drive."""
+
     MAX_SPEED = 6.4
 
     def __init__(
@@ -36,6 +38,7 @@ class Wheels:
         self.all_motors = self.left_motors + self.right_motors
 
         for motor in self.all_motors:
+            # Infinite position switches Webots motors into velocity-control mode.
             motor.setPosition(float("inf"))
             motor.setVelocity(0.0)
 
@@ -81,6 +84,7 @@ class Wheels:
     def curve_left(
         self, speed: float | None = None, turn_ratio: float | None = None
     ) -> None:
+        """Drive forward while slowing the left side by turn_ratio."""
         speed = self.default_speed if speed is None else speed
         speed = self.clamp_speed(speed)
         turn_ratio = self.curve_ratio if turn_ratio is None else turn_ratio
@@ -90,6 +94,7 @@ class Wheels:
     def curve_right(
         self, speed: float | None = None, turn_ratio: float | None = None
     ) -> None:
+        """Drive forward while slowing the right side by turn_ratio."""
         speed = self.default_speed if speed is None else speed
         speed = self.clamp_speed(speed)
         turn_ratio = self.curve_ratio if turn_ratio is None else turn_ratio

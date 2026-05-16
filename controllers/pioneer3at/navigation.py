@@ -19,6 +19,13 @@ class NavigationCommand(Enum):
 
 
 class Navigation:
+    """
+    Turns high-level grid commands into wheel motion using odometry and sonar.
+
+    The class owns short-lived movement commands. Explorer decides what to do
+    next; Navigation decides how to execute one command and when it has settled.
+    """
+
     PARALLEL_THRESHOLD = 10.0
     ALIGN_PARALLEL_STABLE_STEPS = 30
     ALIGN_PARALLEL_INVALID_LIMIT = 30
@@ -56,6 +63,7 @@ class Navigation:
         return self.active_command == NavigationCommand.RECOVER
 
     def send_command(self, command: NavigationCommand) -> bool:
+        """Start a command if the navigation state machine is idle."""
         if command == NavigationCommand.RECOVER:
             return self._start_recovery()
 
@@ -110,6 +118,7 @@ class Navigation:
         self._proceed_command()
 
     def _start_recovery(self) -> bool:
+        """Interrupt the current command and drive back to its start pose."""
         if self.active_command is None:
             self._debug("Rejected RECOVER command; no active command")
             return False
@@ -143,6 +152,12 @@ class Navigation:
         )
 
     def _start_center_alignment_if_needed(self) -> None:
+        """
+        After entering a cell, optionally rotate sideways and center in corridor.
+
+        Centering only works when both side walls are visible. Otherwise the robot
+        falls back to parallel alignment against any reliable wall.
+        """
         diff = self.sensors.left_right_diff()
 
         if diff is None:
@@ -200,6 +215,7 @@ class Navigation:
             return
 
     def _proceed_forward(self) -> None:
+        """Move one grid tile while making small wall-following corrections."""
         error = self.sensors.parallel_error()
 
         if error is None:
@@ -223,6 +239,7 @@ class Navigation:
             self.wheels.curve_left(turn_ratio=turn_ratio)
 
     def _proceed_recovery(self) -> None:
+        """Undo partial movement before the map position is advanced."""
         turn_error = self.odometry.turn_error()
         forward_error = self.odometry.forward_error()
 
@@ -283,6 +300,13 @@ class Navigation:
             self.wheels.turn_left()
 
     def _proceed_center_move(self) -> None:
+        """
+        Move laterally through a temporary 90-degree turn until centered.
+
+        During this phase the map direction is not updated; the matching
+        ALIGN_CENTER_TURN_BACK command restores the physical heading before the
+        explorer receives another command.
+        """
         diff = self.sensors.front_back_diff()
 
         if diff is None:

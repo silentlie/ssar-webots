@@ -4,11 +4,14 @@ from controller import DistanceSensor, Robot
 from gridMap import RelativeDirection
 
 
-def clamp(value: float, min_value: float, max_value: float) -> float:
-    return max(min_value, min(max_value, value))
-
-
 class Sensors:
+    """
+    Groups the Pioneer 3AT sonars into grid-facing directions and alignment signals.
+
+    Webots distance sensors return raw proximity values here. Higher values mean
+    closer obstacles, so thresholds are calibrated against those raw readings.
+    """
+
     def __init__(
         self,
         robot: Robot,
@@ -81,6 +84,7 @@ class Sensors:
         return not self.is_direction_blocked(direction)
 
     def scan_neighbors(self) -> dict[RelativeDirection, bool]:
+        """Return whether each adjacent grid direction is clear enough to enter."""
         neighbors: dict[RelativeDirection, bool] = {}
 
         for direction in RelativeDirection:
@@ -109,6 +113,13 @@ class Sensors:
         )
 
     def parallel_error(self) -> float | None:
+        """
+        Estimate whether the robot is angled relative to nearby side walls.
+
+        Positive means the nose is closer to the left wall or farther from the
+        right wall, so navigation should steer right. Returns None when the side
+        wall readings are not reliable enough to use.
+        """
         side_values = self._side_values()
 
         left_reliable = self._left_wall_reliable(side_values)
@@ -169,6 +180,13 @@ class Sensors:
         return self.filtered_parallel_error
 
     def left_right_diff(self) -> float | None:
+        """
+        Estimate lateral offset between left and right walls.
+
+        Positive means the robot is closer to the left wall than the right wall.
+        Both walls must be visible because this value is used for corridor
+        centering, not single-wall following.
+        """
         side_values = self._side_values()
 
         left_reliable = self._left_wall_reliable(side_values)

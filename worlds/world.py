@@ -1,3 +1,5 @@
+"""Convert symbolic maze layouts into a Webots world file."""
+
 from maze import generate_decision_heavy_maze
 
 TILE_SIZE = 1
@@ -66,6 +68,7 @@ def block(
     color: str,
     collidable: bool = False,
 ) -> str:
+    """Render one colored Webots Box Solid, optionally with collision."""
     bounding_object = ""
 
     if collidable:
@@ -161,6 +164,12 @@ def maze_to_world(
     maze: list[list[str]],
     tile_size: float = TILE_SIZE,
 ) -> str:
+    """
+    Convert grid coordinates into centered Webots x/y positions.
+
+    The maze origin is the top-left symbolic cell; Webots positions are shifted
+    so the generated arena is centered around (0, 0).
+    """
     height = len(maze)
     width = len(maze[0])
 

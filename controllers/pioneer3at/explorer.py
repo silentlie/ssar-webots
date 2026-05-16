@@ -26,6 +26,13 @@ class ExplorerState(Enum):
 
 
 class Explorer:
+    """
+    High-level exploration state machine.
+
+    Explorer updates the map, chooses frontier targets, asks PathPlanner for a
+    route, and feeds one NavigationCommand at a time to Navigation.
+    """
+
     def __init__(
         self,
         sensors: Sensors,
@@ -113,7 +120,10 @@ class Explorer:
 
     def _plan_path(self) -> None:
         """
-        Choose a frontier and plan a path to it.
+        Choose the next frontier and plan a path to it.
+
+        The frontier is not removed until it is reached or proven unreachable;
+        this lets temporary navigation failures re-scan before abandoning cells.
         """
         target = self.grid_map.peek_frontier()
 

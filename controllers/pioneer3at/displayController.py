@@ -5,6 +5,8 @@ from gridMap import Cell, Direction, Position, move
 
 
 class DisplayController:
+    """Draws the explored grid map onto the Webots robot display device."""
+
     BACKGROUND_COLOR = 0x111111
     WALL_COLOR = 0x000000
     VISITED_FREE_COLOR = 0xFFFFFF
@@ -75,6 +77,7 @@ class DisplayController:
         robot_position: Position,
         path_positions: list[Position],
     ) -> None:
+        """Fit all known cells, the robot, and current path into the display."""
         positions = set(grid.keys())
         positions.add(robot_position)
         positions.update(path_positions)
@@ -139,6 +142,8 @@ class DisplayController:
         if len(path_positions) == 0:
             return
 
+        # The highlighted target is the immediate next cell, not the final
+        # frontier, so it stays useful while following long paths.
         self._draw_cell(
             path_positions[0],
             self.TARGET_COLOR,
@@ -166,6 +171,7 @@ class DisplayController:
         position: Position,
         direction: Direction,
     ) -> None:
+        """Draw a compact heading marker inside the robot circle."""
         center_x, center_y = self._cell_center(position)
 
         arrow_length = max(5, self.cell_size // 3)

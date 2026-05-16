@@ -1,5 +1,6 @@
 from enum import Enum
 
+# Grid coordinates are (x, y), with y increasing downward on the display.
 Position = tuple[int, int]
 
 
@@ -51,6 +52,13 @@ def opposite_of(direction: Direction) -> Direction:
 
 
 class GridMap:
+    """
+    Stores the explored occupancy grid and the robot's grid-space pose.
+
+    The map is intentionally discrete: odometry handles physical movement, while
+    this class advances only after Navigation finishes a full tile or turn.
+    """
+
     def __init__(self) -> None:
         self._grid: dict[Position, Cell] = {}
         self._visited: set[Position] = set()
@@ -92,6 +100,7 @@ class GridMap:
             self._frontier_set.add(position)
 
     def peek_frontier(self) -> Position | None:
+        """Return the newest still-valid frontier without removing it."""
         while self._frontier_stack:
             if self._frontier_stack[-1] in self._frontier_set:
                 return self._frontier_stack[-1]
@@ -102,8 +111,8 @@ class GridMap:
         self._frontier_set.discard(position)
 
     def update_neighbors(self, sensors: dict[RelativeDirection, Cell]) -> None:
-        # Because this is a stack, the last added safe neighbor is considered first.
-        # This order makes FRONT the preferred next move, then RIGHT, then LEFT, then BACK.
+        # Frontiers are stack-backed. Adding in reverse priority makes FRONT the
+        # next frontier considered, then RIGHT, then LEFT, then BACK.
         update_order = [
             RelativeDirection.BACK,
             RelativeDirection.LEFT,

@@ -7,6 +7,8 @@ from controller import PositionSensor, Robot
 
 @dataclass
 class Pose:
+    """Continuous robot pose measured from encoder integration."""
+
     x: float = 0.0
     y: float = 0.0
     theta: float = 0.0
@@ -123,9 +125,12 @@ class Odometry:
         left_distance = delta_left_angle * self.wheel_radius
         right_distance = delta_right_angle * self.wheel_radius
 
+        # Differential-drive integration: average wheel travel moves the robot
+        # forward, while the left/right difference rotates around the axle.
         delta_distance = (left_distance + right_distance) / 2.0
         delta_theta = (right_distance - left_distance) / self.axle_length
 
+        # Integrating at the midpoint heading reduces arc-motion drift for turns.
         midpoint_theta = self.current_pose.theta + delta_theta / 2.0
 
         self.current_pose.x += delta_distance * math.cos(midpoint_theta)
@@ -150,6 +155,7 @@ class Odometry:
         return self.current_pose.distance - self.action_start_pose.distance
 
     def forward_almost_complete(self) -> bool:
+        """Return True when it is too late to safely abort a one-tile move."""
         return (
             self.signed_forward_distance() >= self.tile_size - self.forward_end_margin
         )

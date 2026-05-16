@@ -3,6 +3,8 @@ from wheels import Wheels
 
 
 class KeyboardController:
+    """Manual driving helper kept for tuning and fallback control."""
+
     def __init__(
         self,
         robot: Robot,
@@ -13,7 +15,10 @@ class KeyboardController:
         self.keyboard = robot.getKeyboard()
         self.keyboard.enable(int(robot.getBasicTimeStep()))
         self.wheels = Wheels(
-            robot, default_speed=drive_speed, default_turn_speed=turn_speed, curve_ratio=curve_ratio
+            robot,
+            default_speed=drive_speed,
+            default_turn_speed=turn_speed,
+            curve_ratio=curve_ratio,
         )
 
         self.drive_speed = drive_speed
@@ -29,6 +34,7 @@ class KeyboardController:
         print("Use arrow keys or WASD to control the robot, and space to stop.")
 
     def get_pressed_keys(self) -> set[int]:
+        """Drain Webots keyboard events into a set of currently pressed keys."""
         keys: set[int] = set()
 
         key = self.keyboard.getKey()
