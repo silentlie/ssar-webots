@@ -1,10 +1,12 @@
 from controller import Robot
-from utils import KeyboardController, getCamera
+
+from algorithm import ExplorationStrategy
+from utils import Wheels
 
 robot = Robot()
 timestep = int(robot.getBasicTimeStep())
-camera = getCamera(robot)
-keyboardController = KeyboardController(robot, drive_speed=3.0, turn_speed=2.0)
+wheels = Wheels(robot, max_speed=3.0)
+explorer = ExplorationStrategy(robot, wheels, timestep)
 
 while robot.step(timestep) != -1:
-    keyboardController.update()
+    explorer.update()
