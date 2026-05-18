@@ -218,15 +218,23 @@ def save_world(
 
     with open(filename, "w", encoding="utf-8") as file:
         file.write(world_data)
-
+def save_maze_as_txt(filename: str, maze: list[list[str]]) -> None:
+    with open(filename, "w", encoding="utf-8") as file:
+        for row in maze:
+            file.write("".join(row))
+            file.write("\n")
 
 if __name__ == "__main__":
-    maze = generate_decision_heavy_maze()
+    maze = generate_decision_heavy_maze(height=10, width=10)
 
     save_world(
         filename="Scout, Search And Rescue.wbt",
         maze=maze,
         tile_size=TILE_SIZE,
+    )
+    save_maze_as_txt(
+        filename="current_maze.txt",
+        maze=maze,
     )
 
     print(f"Generated Scout, Search And Rescue.wbt with tile size {TILE_SIZE:.2f}m")
