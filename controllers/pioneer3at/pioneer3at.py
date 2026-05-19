@@ -1,6 +1,6 @@
 """Webots entry point for the autonomous Pioneer 3AT controller."""
 
-from camera import CameraController
+from visionPerception import VisionPerception
 from controller import Robot
 from displayController import DisplayController
 from explorer import Explorer
@@ -17,13 +17,13 @@ START_DELAY_SECONDS = 1.0
 robot = Robot()
 timestep = int(robot.getBasicTimeStep())
 sensors = Sensors(robot, debug=DEBUG)
-camera = CameraController(robot)
-wheels = Wheels(robot, default_turn_speed=1)
+vision = VisionPerception(robot, debug=DEBUG)
+wheels = Wheels(robot)
 odometry = Odometry(robot, TILE_SIZE, debug=DEBUG)
 gridMap = GridMap()
 navigation = Navigation(wheels, odometry, gridMap, sensors, debug=DEBUG)
 display = DisplayController(robot, debug=DEBUG)
-explorer = Explorer(sensors, gridMap, navigation, display, debug=DEBUG)
+explorer = Explorer(sensors, gridMap, navigation, display, vision, debug=DEBUG)
 
 start_time = robot.getTime()
 if DEBUG:

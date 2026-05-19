@@ -27,14 +27,14 @@ class Navigation:
     """
 
     PARALLEL_THRESHOLD = 10.0
-    ALIGN_PARALLEL_STABLE_STEPS = 30
-    ALIGN_PARALLEL_INVALID_LIMIT = 30
-    PARALLEL_FORWARD_DEADBAND = 5.0
-    PARALLEL_FORWARD_KP = 0.02
+    ALIGN_PARALLEL_STABLE_STEPS = 10
+    ALIGN_PARALLEL_INVALID_LIMIT = 10
+    PARALLEL_FORWARD_DEADBAND = 0.0
+    PARALLEL_FORWARD_KP = 0.015
     MAX_PARALLEL_FORWARD_CORRECTION = 0.5
-    SIDE_CENTER_THRESHOLD = 30.0
+    SIDE_CENTER_THRESHOLD = 50.0
     CENTER_MOVE_THRESHOLD = 3.0
-    ALIGN_CENTER_INVALID_LIMIT = 30
+    ALIGN_CENTER_INVALID_LIMIT = 10
 
     def __init__(
         self,
@@ -220,6 +220,7 @@ class Navigation:
         error = self.sensors.parallel_error()
 
         if error is None:
+            self._debug("Parallel error unavailable; moving forward without correction")
             self.wheels.forward()
             return
         self._debug(f"Parallel forward error: {error:.2f}")
@@ -230,10 +231,12 @@ class Navigation:
         if error == 0.0:
             self.wheels.forward()
             return
-        absolute_error -= 5.0
         correction = absolute_error * self.PARALLEL_FORWARD_KP
         correction = min(correction, self.MAX_PARALLEL_FORWARD_CORRECTION)
         turn_ratio = 1.0 - correction
+        self._debug(
+            f"Applying parallel forward correction: {correction:.2f}, turn_ratio: {turn_ratio:.2f}"
+        )
         if error > 0.0:
             self.wheels.curve_right(turn_ratio=turn_ratio)
         else:

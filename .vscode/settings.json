@@ -4,8 +4,13 @@
     ],
     "cSpell.words": [
         "astar",
+        "colour",
         "DEADBAND",
+        "neighbour",
+        "neighbours",
         "popleft",
+        "prioritise",
+        "prioritising",
         "WASD",
         "Webots"
     ]

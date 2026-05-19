@@ -133,7 +133,9 @@ class GridMap:
             if adjacent_position in self._visited:
                 # Don't update known cells based on noisy sensor data.
                 continue
-
+            current_cell = self.get_cell(adjacent_position)
+            if current_cell in {Cell.DANGER, Cell.GOAL}:
+                continue
             self.set_cell(adjacent_position, cell_type)
 
             if self.can_enter(adjacent_position):

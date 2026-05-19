@@ -15,6 +15,7 @@ from gridMap import (
 from navigation import Navigation, NavigationCommand
 from pathPlanner import PathPlanner
 from sensors import Sensors
+from visionPerception import VisionPerception
 
 
 class ExplorerState(Enum):
@@ -39,6 +40,7 @@ class Explorer:
         grid_map: GridMap,
         navigation: Navigation,
         display: DisplayController,
+        perception: VisionPerception,
         debug: bool = False,
     ) -> None:
         self.sensors = sensors
@@ -46,6 +48,7 @@ class Explorer:
         self.path_planner = PathPlanner(grid_map)
         self.display = display
         self.navigation = navigation
+        self.perception = perception
         self.debug = debug
 
         self.state = ExplorerState.SCANNING
@@ -56,6 +59,7 @@ class Explorer:
         # Explorer keeps this because Navigation clears active_command
         # when the command finishes.
         self.current_command: NavigationCommand | None = None
+        self._scan_goal_directions: list[Direction] | None = None
 
         self._debug("Explorer initialized")
 
@@ -81,7 +85,6 @@ class Explorer:
 
         if self.state == ExplorerState.SCANNING:
             self._scan()
-            self._set_state(ExplorerState.PLANNING_PATH)
             return
 
         if self.state == ExplorerState.PLANNING_PATH:
@@ -101,6 +104,85 @@ class Explorer:
 
     def _scan(self) -> None:
         """
+        Scan sonar neighbours once, then rotate through unvisited enterable
+        neighbour directions to check for a far visible green goal.
+        """
+        if not self.navigation.is_idle():
+            return
+
+        # None means this scan cycle has not started yet.
+        if self._scan_goal_directions is None:
+            self._scan_neighbors_once()
+            self._scan_goal_directions = self._unvisited_neighbor_directions()
+            self.perception.reset_goal_visible()
+
+            self._debug(
+                "Goal-visible scan directions: "
+                f"{self._format_path(self._scan_goal_directions)}"
+            )
+
+        # Empty list means all candidate directions have been checked.
+        if len(self._scan_goal_directions) == 0:
+            self._debug("Scan complete; planning path")
+            self._scan_goal_directions = None
+            self.perception.reset_goal_visible()
+            self._set_state(ExplorerState.PLANNING_PATH)
+            return
+
+        # First element is the current direction being checked.
+        scan_direction = self._scan_goal_directions[0]
+        scan_position = move(self.grid_map.robot_position, scan_direction)
+
+        # If this cell is no longer worth checking, finish this direction.
+        if (
+            scan_position in self.grid_map.visited
+            or not self.grid_map.can_enter(scan_position)
+        ):
+            self._scan_goal_directions.pop(0)
+            self.perception.reset_goal_visible()
+            return
+
+        # Rotate until facing the direction being checked.
+        if self.grid_map.robot_direction != scan_direction:
+            command = self._command_for_direction(scan_direction)
+            accepted = self.navigation.send_command(command)
+
+            if not accepted:
+                self._debug(f"Navigation rejected scan turn command={command.name}")
+                self._scan_goal_directions.pop(0)
+                self.perception.reset_goal_visible()
+
+            return
+
+        # Now facing this neighbour; check far goal.
+        goal_visible_ahead = self.perception.check_goal_visible_ahead()
+
+        if goal_visible_ahead is None:
+            self._debug("Goal-visible scan uncertain; waiting")
+            return
+
+        if goal_visible_ahead is True:
+            self._debug(
+                f"Far goal visible toward {scan_direction.name}; "
+                f"prioritising next cell {scan_position}"
+            )
+
+            self.path = [scan_direction]
+            self.target_position = scan_position
+            self.current_command = None
+
+            self._scan_goal_directions = None
+            self.perception.reset_goal_visible()
+            self._set_state(ExplorerState.FOLLOWING_PATH)
+            return
+
+        # goal_visible_ahead is False, so this direction is finished.
+        self._debug(f"No far goal visible toward {scan_direction.name}")
+        self._scan_goal_directions.pop(0)
+        self.perception.reset_goal_visible()
+
+    def _scan_neighbors_once(self) -> None:
+        """
         Scan only when the robot is assumed to be centred in a grid cell.
         """
         scan = self.sensors.scan_neighbors()
@@ -117,6 +199,42 @@ class Explorer:
             f"direction={self.grid_map.robot_direction.name}, "
             f"neighbors={self._format_neighbor_cells(neighbor_cells)}"
         )
+
+    def _unvisited_neighbor_directions(self) -> list[Direction]:
+        """
+        Return absolute directions for neighboring cells that are:
+        - not visited
+        - enterable according to the current grid map
+
+        These are the directions worth rotating toward for far-goal vision checks.
+        """
+        check_order = [
+            RelativeDirection.FRONT,
+            RelativeDirection.RIGHT,
+            RelativeDirection.LEFT,
+            RelativeDirection.BACK,
+        ]
+
+        directions: list[Direction] = []
+
+        for relative_direction in check_order:
+            absolute_direction = Direction(
+                (self.grid_map.robot_direction.value + relative_direction.value) % 4
+            )
+            adjacent_position = move(
+                self.grid_map.robot_position,
+                absolute_direction,
+            )
+
+            if adjacent_position in self.grid_map.visited:
+                continue
+
+            if not self.grid_map.can_enter(adjacent_position):
+                continue
+
+            directions.append(absolute_direction)
+
+        return directions
 
     def _plan_path(self) -> None:
         """
@@ -186,6 +304,27 @@ class Explorer:
         target_direction = self.path[0]
         command = self._command_for_direction(target_direction)
 
+        # Far goal visibility is only a soft override.
+        # If uncertain or false, keep following the planned path.
+        if command != NavigationCommand.MOVE_FORWARD:
+            goal_visible_ahead = self.perception.check_goal_visible_ahead()
+
+            if goal_visible_ahead is True:
+                forward_position = move(
+                    self.grid_map.robot_position,
+                    self.grid_map.robot_direction,
+                )
+
+                if self.grid_map.can_enter(forward_position):
+                    self._debug(
+                        f"Goal visible ahead; overriding planned {command.name} "
+                        "with MOVE_FORWARD"
+                    )
+
+                    self.path = [self.grid_map.robot_direction]
+                    self.target_position = forward_position
+                    command = NavigationCommand.MOVE_FORWARD
+
         if command == NavigationCommand.MOVE_FORWARD:
             next_position = move(
                 self.grid_map.robot_position,
@@ -199,8 +338,57 @@ class Explorer:
                 )
                 self.path = []
                 self.current_command = None
+                self.perception.reset_all()
                 self._set_state(ExplorerState.PLANNING_PATH)
                 return
+
+            # Run both checks together so their frame scores build in parallel.
+            danger_ahead = self.perception.check_danger_ahead()
+            goal_ahead = self.perception.check_goal_ahead()
+
+            # Danger has priority over goal.
+            if danger_ahead is True:
+                self._debug(
+                    f"Vision detected danger ahead at {next_position}; "
+                    "marking DANGER and replanning"
+                )
+
+                self.grid_map.set_cell(next_position, Cell.DANGER)
+                self.grid_map.discard_frontier(next_position)
+
+                self.path = []
+                self.current_command = None
+                self.perception.reset_all()
+                self._set_state(ExplorerState.PLANNING_PATH)
+                return
+
+            if danger_ahead is None:
+                self._debug(
+                    "Vision danger check uncertain; waiting before MOVE_FORWARD"
+                )
+                return
+
+            # danger_ahead is False here.
+
+            if goal_ahead is None:
+                self._debug("Vision goal check uncertain; waiting before MOVE_FORWARD")
+                return
+
+            if goal_ahead is True:
+                self._debug(
+                    f"Vision detected goal ahead at {next_position}; marking GOAL"
+                )
+
+                self.grid_map.set_cell(next_position, Cell.GOAL)
+
+                # Make the goal cell the immediate target.
+                # After MOVE_FORWARD completes, the path becomes empty and Explorer scans.
+                self.path = [self.grid_map.robot_direction]
+                self.target_position = next_position
+
+            # goal_ahead is True or False.
+            # danger_ahead is confirmed False.
+            # Safe to send MOVE_FORWARD.
 
         accepted = self.navigation.send_command(command)
 
@@ -209,6 +397,7 @@ class Explorer:
             return
 
         self.current_command = command
+        self.perception.reset_all()
 
         self._debug(
             f"Sent command={command.name}, "

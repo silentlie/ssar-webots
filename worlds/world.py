@@ -234,7 +234,7 @@ def save_world(
 
 
 if __name__ == "__main__":
-    maze = generate_decision_heavy_maze()
+    maze = generate_decision_heavy_maze(goal_ratio=0.2)
 
     save_world(
         filename="Scout, Search And Rescue.wbt",

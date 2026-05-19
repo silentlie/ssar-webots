@@ -583,8 +583,8 @@ Solid {
 
 
 Solid {
-  name "wall_4.0_-9.0"
-  translation 4.0 -9.0 0.5
+  name "wall_-8.0_-9.0"
+  translation -8.0 -9.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -608,8 +608,108 @@ Solid {
 
 
 Solid {
-  name "wall_8.0_-9.0"
-  translation 8.0 -9.0 0.5
+  name "wall_-6.0_-9.0"
+  translation -6.0 -9.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-4.0_-9.0"
+  translation -4.0 -9.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-2.0_-9.0"
+  translation -2.0 -9.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_0.0_-9.0"
+  translation 0.0 -9.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_2.0_-9.0"
+  translation 2.0 -9.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -683,6 +783,31 @@ Solid {
 
 
 Solid {
+  name "wall_-8.0_-8.0"
+  translation -8.0 -8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_-6.0_-8.0"
   translation -6.0 -8.0 0.5
   children [
@@ -733,58 +858,8 @@ Solid {
 
 
 Solid {
-  name "wall_-3.0_-8.0"
-  translation -3.0 -8.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_-2.0_-8.0"
   translation -2.0 -8.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-1.0_-8.0"
-  translation -1.0 -8.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -858,31 +933,6 @@ Solid {
 
 
 Solid {
-  name "wall_3.0_-8.0"
-  translation 3.0 -8.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_4.0_-8.0"
   translation 4.0 -8.0 0.5
   children [
@@ -908,33 +958,8 @@ Solid {
 
 
 Solid {
-  name "wall_5.0_-8.0"
-  translation 5.0 -8.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_6.0_-8.0"
-  translation 6.0 -8.0 0.5
+  name "wall_8.0_-8.0"
+  translation 8.0 -8.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1008,8 +1033,133 @@ Solid {
 
 
 Solid {
+  name "wall_-8.0_-7.0"
+  translation -8.0 -7.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_-6.0_-7.0"
   translation -6.0 -7.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-4.0_-7.0"
+  translation -4.0 -7.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-2.0_-7.0"
+  translation -2.0 -7.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_6.0_-7.0"
+  translation 6.0 -7.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_8.0_-7.0"
+  translation 8.0 -7.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1083,31 +1233,6 @@ Solid {
 
 
 Solid {
-  name "wall_-9.0_-6.0"
-  translation -9.0 -6.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_-8.0_-6.0"
   translation -8.0 -6.0 0.5
   children [
@@ -1158,33 +1283,8 @@ Solid {
 
 
 Solid {
-  name "wall_-5.0_-6.0"
-  translation -5.0 -6.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-3.0_-6.0"
-  translation -3.0 -6.0 0.5
+  name "wall_-4.0_-6.0"
+  translation -4.0 -6.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1233,6 +1333,31 @@ Solid {
 
 
 Solid {
+  name "wall_-1.0_-6.0"
+  translation -1.0 -6.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_0.0_-6.0"
   translation 0.0 -6.0 0.5
   children [
@@ -1258,8 +1383,58 @@ Solid {
 
 
 Solid {
-  name "wall_4.0_-6.0"
-  translation 4.0 -6.0 0.5
+  name "wall_1.0_-6.0"
+  translation 1.0 -6.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_2.0_-6.0"
+  translation 2.0 -6.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_3.0_-6.0"
+  translation 3.0 -6.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1285,31 +1460,6 @@ Solid {
 Solid {
   name "wall_6.0_-6.0"
   translation 6.0 -6.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_7.0_-6.0"
-  translation 7.0 -6.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1433,8 +1583,83 @@ Solid {
 
 
 Solid {
+  name "wall_-6.0_-5.0"
+  translation -6.0 -5.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_0.0_-5.0"
   translation 0.0 -5.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_4.0_-5.0"
+  translation 4.0 -5.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_6.0_-5.0"
+  translation 6.0 -5.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1583,6 +1808,31 @@ Solid {
 
 
 Solid {
+  name "wall_-5.0_-4.0"
+  translation -5.0 -4.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_-4.0_-4.0"
   translation -4.0 -4.0 0.5
   children [
@@ -1610,31 +1860,6 @@ Solid {
 Solid {
   name "wall_-3.0_-4.0"
   translation -3.0 -4.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-2.0_-4.0"
-  translation -2.0 -4.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1783,33 +2008,8 @@ Solid {
 
 
 Solid {
-  name "wall_7.0_-4.0"
-  translation 7.0 -4.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_8.0_-4.0"
-  translation 8.0 -4.0 0.5
+  name "wall_9.0_-4.0"
+  translation 9.0 -4.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -1883,108 +2083,8 @@ Solid {
 
 
 Solid {
-  name "wall_-8.0_-3.0"
-  translation -8.0 -3.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-6.0_-3.0"
-  translation -6.0 -3.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_-4.0_-3.0"
   translation -4.0 -3.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_0.0_-3.0"
-  translation 0.0 -3.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_8.0_-3.0"
-  translation 8.0 -3.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2083,83 +2183,33 @@ Solid {
 
 
 Solid {
-  name "wall_-7.0_-2.0"
-  translation -7.0 -2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-6.0_-2.0"
-  translation -6.0 -2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-5.0_-2.0"
-  translation -5.0 -2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_-4.0_-2.0"
   translation -4.0 -2.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-3.0_-2.0"
+  translation -3.0 -2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2258,33 +2308,8 @@ Solid {
 
 
 Solid {
-  name "wall_1.0_-2.0"
-  translation 1.0 -2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_3.0_-2.0"
-  translation 3.0 -2.0 0.5
+  name "wall_2.0_-2.0"
+  translation 2.0 -2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2310,6 +2335,31 @@ Solid {
 Solid {
   name "wall_4.0_-2.0"
   translation 4.0 -2.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_5.0_-2.0"
+  translation 5.0 -2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2383,31 +2433,6 @@ Solid {
 
 
 Solid {
-  name "wall_9.0_-2.0"
-  translation 9.0 -2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_10.0_-2.0"
   translation 10.0 -2.0 0.5
   children [
@@ -2458,8 +2483,58 @@ Solid {
 
 
 Solid {
+  name "wall_-4.0_-1.0"
+  translation -4.0 -1.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_2.0_-1.0"
   translation 2.0 -1.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_6.0_-1.0"
+  translation 6.0 -1.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2583,33 +2658,8 @@ Solid {
 
 
 Solid {
-  name "wall_-4.0_0.0"
-  translation -4.0 0.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-3.0_0.0"
-  translation -3.0 0.0 0.5
+  name "wall_-5.0_0.0"
+  translation -5.0 0.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2658,58 +2708,33 @@ Solid {
 
 
 Solid {
+  name "wall_-1.0_0.0"
+  translation -1.0 0.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_0.0_0.0"
   translation 0.0 0.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_2.0_0.0"
-  translation 2.0 0.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_3.0_0.0"
-  translation 3.0 0.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2758,83 +2783,8 @@ Solid {
 
 
 Solid {
-  name "wall_6.0_0.0"
-  translation 6.0 0.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_7.0_0.0"
-  translation 7.0 0.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_8.0_0.0"
   translation 8.0 0.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_9.0_0.0"
-  translation 9.0 0.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -2908,31 +2858,6 @@ Solid {
 
 
 Solid {
-  name "wall_-8.0_1.0"
-  translation -8.0 1.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_-6.0_1.0"
   translation -6.0 1.0 0.5
   children [
@@ -2958,8 +2883,8 @@ Solid {
 
 
 Solid {
-  name "wall_-2.0_1.0"
-  translation -2.0 1.0 0.5
+  name "wall_-4.0_1.0"
+  translation -4.0 1.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -3058,56 +2983,6 @@ Solid {
 
 
 Solid {
-  name "wall_-9.0_2.0"
-  translation -9.0 2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-8.0_2.0"
-  translation -8.0 2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_-6.0_2.0"
   translation -6.0 2.0 0.5
   children [
@@ -3158,33 +3033,8 @@ Solid {
 
 
 Solid {
-  name "wall_-2.0_2.0"
-  translation -2.0 2.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-1.0_2.0"
-  translation -1.0 2.0 0.5
+  name "wall_-3.0_2.0"
+  translation -3.0 2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -3258,8 +3108,58 @@ Solid {
 
 
 Solid {
+  name "wall_3.0_2.0"
+  translation 3.0 2.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_4.0_2.0"
   translation 4.0 2.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_5.0_2.0"
+  translation 5.0 2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -3333,6 +3233,31 @@ Solid {
 
 
 Solid {
+  name "wall_9.0_2.0"
+  translation 9.0 2.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_10.0_2.0"
   translation 10.0 2.0 0.5
   children [
@@ -3360,6 +3285,56 @@ Solid {
 Solid {
   name "wall_-10.0_3.0"
   translation -10.0 3.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-8.0_3.0"
+  translation -8.0 3.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-6.0_3.0"
+  translation -6.0 3.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -3458,6 +3433,31 @@ Solid {
 
 
 Solid {
+  name "wall_6.0_3.0"
+  translation 6.0 3.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_8.0_3.0"
   translation 8.0 3.0 0.5
   children [
@@ -3510,6 +3510,31 @@ Solid {
 Solid {
   name "wall_-10.0_4.0"
   translation -10.0 4.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-9.0_4.0"
+  translation -9.0 4.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -3633,56 +3658,6 @@ Solid {
 
 
 Solid {
-  name "wall_-3.0_4.0"
-  translation -3.0 4.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-2.0_4.0"
-  translation -2.0 4.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
   name "wall_0.0_4.0"
   translation 0.0 4.0 0.5
   children [
@@ -3735,6 +3710,31 @@ Solid {
 Solid {
   name "wall_2.0_4.0"
   translation 2.0 4.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_4.0_4.0"
+  translation 4.0 4.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -3860,106 +3860,6 @@ Solid {
 Solid {
   name "wall_-8.0_5.0"
   translation -8.0 5.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-4.0_5.0"
-  translation -4.0 5.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_0.0_5.0"
-  translation 0.0 5.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_2.0_5.0"
-  translation 2.0 5.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_8.0_5.0"
-  translation 8.0 5.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4158,6 +4058,31 @@ Solid {
 
 
 Solid {
+  name "wall_-1.0_6.0"
+  translation -1.0 6.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_0.0_6.0"
   translation 0.0 6.0 0.5
   children [
@@ -4208,8 +4133,58 @@ Solid {
 
 
 Solid {
+  name "wall_3.0_6.0"
+  translation 3.0 6.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_4.0_6.0"
   translation 4.0 6.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_5.0_6.0"
+  translation 5.0 6.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4308,8 +4283,8 @@ Solid {
 
 
 Solid {
-  name "wall_-8.0_7.0"
-  translation -8.0 7.0 0.5
+  name "wall_-6.0_7.0"
+  translation -6.0 7.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4360,56 +4335,6 @@ Solid {
 Solid {
   name "wall_2.0_7.0"
   translation 2.0 7.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_4.0_7.0"
-  translation 4.0 7.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_6.0_7.0"
-  translation 6.0 7.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4508,6 +4433,131 @@ Solid {
 
 
 Solid {
+  name "wall_-9.0_8.0"
+  translation -9.0 8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-8.0_8.0"
+  translation -8.0 8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-7.0_8.0"
+  translation -7.0 8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-6.0_8.0"
+  translation -6.0 8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_-5.0_8.0"
+  translation -5.0 8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
   name "wall_-4.0_8.0"
   translation -4.0 8.0 0.5
   children [
@@ -4533,8 +4583,33 @@ Solid {
 
 
 Solid {
-  name "wall_1.0_8.0"
-  translation 1.0 8.0 0.5
+  name "wall_-2.0_8.0"
+  translation -2.0 8.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.5 0.5 0.5
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+  boundingObject Box {
+    size 1 1 1
+  }
+}
+
+
+Solid {
+  name "wall_0.0_8.0"
+  translation 0.0 8.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4608,8 +4683,8 @@ Solid {
 
 
 Solid {
-  name "wall_6.0_8.0"
-  translation 6.0 8.0 0.5
+  name "wall_5.0_8.0"
+  translation 5.0 8.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4708,33 +4783,8 @@ Solid {
 
 
 Solid {
-  name "wall_-8.0_9.0"
-  translation -8.0 9.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_-6.0_9.0"
-  translation -6.0 9.0 0.5
+  name "wall_-2.0_9.0"
+  translation -2.0 9.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -4760,56 +4810,6 @@ Solid {
 Solid {
   name "wall_2.0_9.0"
   translation 2.0 9.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_4.0_9.0"
-  translation 4.0 9.0 0.5
-  children [
-    Shape {
-      appearance Appearance {
-        material Material {
-          diffuseColor 0.5 0.5 0.5
-          emissiveColor 0 0 0
-          ambientIntensity 1
-          shininess 0
-          specularColor 0 0 0
-        }
-      }
-      geometry Box {
-        size 1 1 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1 1 1
-  }
-}
-
-
-Solid {
-  name "wall_6.0_9.0"
-  translation 6.0 9.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5413,8 +5413,8 @@ Solid {
       children [
 
 Solid {
-  name "danger_-9.0_-8.0"
-  translation -9.0 -8.0 0.5
+  name "danger_4.0_-6.0"
+  translation 4.0 -6.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5435,8 +5435,8 @@ Solid {
 
 
 Solid {
-  name "danger_8.0_-8.0"
-  translation 8.0 -8.0 0.5
+  name "danger_8.0_-4.0"
+  translation 8.0 -4.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5457,8 +5457,8 @@ Solid {
 
 
 Solid {
-  name "danger_2.0_-6.0"
-  translation 2.0 -6.0 0.5
+  name "danger_-6.0_-3.0"
+  translation -6.0 -3.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5479,8 +5479,8 @@ Solid {
 
 
 Solid {
-  name "danger_5.0_-6.0"
-  translation 5.0 -6.0 0.5
+  name "danger_-6.0_-2.0"
+  translation -6.0 -2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5501,8 +5501,8 @@ Solid {
 
 
 Solid {
-  name "danger_2.0_-2.0"
-  translation 2.0 -2.0 0.5
+  name "danger_3.0_-2.0"
+  translation 3.0 -2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5523,8 +5523,8 @@ Solid {
 
 
 Solid {
-  name "danger_-6.0_3.0"
-  translation -6.0 3.0 0.5
+  name "danger_-4.0_0.0"
+  translation -4.0 0.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5545,8 +5545,8 @@ Solid {
 
 
 Solid {
-  name "danger_4.0_4.0"
-  translation 4.0 4.0 0.5
+  name "danger_2.0_0.0"
+  translation 2.0 0.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5567,8 +5567,8 @@ Solid {
 
 
 Solid {
-  name "danger_6.0_5.0"
-  translation 6.0 5.0 0.5
+  name "danger_6.0_0.0"
+  translation 6.0 0.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5589,8 +5589,8 @@ Solid {
 
 
 Solid {
-  name "danger_8.0_6.0"
-  translation 8.0 6.0 0.5
+  name "danger_0.0_1.0"
+  translation 0.0 1.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5611,8 +5611,8 @@ Solid {
 
 
 Solid {
-  name "danger_-6.0_8.0"
-  translation -6.0 8.0 0.5
+  name "danger_-8.0_2.0"
+  translation -8.0 2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5633,8 +5633,8 @@ Solid {
 
 
 Solid {
-  name "danger_-5.0_8.0"
-  translation -5.0 8.0 0.5
+  name "danger_-2.0_2.0"
+  translation -2.0 2.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5655,8 +5655,8 @@ Solid {
 
 
 Solid {
-  name "danger_-2.0_8.0"
-  translation -2.0 8.0 0.5
+  name "danger_-2.0_4.0"
+  translation -2.0 4.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5677,8 +5677,8 @@ Solid {
 
 
 Solid {
-  name "danger_-1.0_8.0"
-  translation -1.0 8.0 0.5
+  name "danger_6.0_8.0"
+  translation 6.0 8.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5699,8 +5699,8 @@ Solid {
 
 
 Solid {
-  name "danger_0.0_8.0"
-  translation 0.0 8.0 0.5
+  name "danger_0.0_9.0"
+  translation 0.0 9.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5726,8 +5726,8 @@ Solid {
       children [
 
 Solid {
-  name "goal_-5.0_-3.0"
-  translation -5.0 -3.0 0.5
+  name "goal_-3.0_-3.0"
+  translation -3.0 -3.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5748,8 +5748,52 @@ Solid {
 
 
 Solid {
-  name "goal_9.0_4.0"
-  translation 9.0 4.0 0.5
+  name "goal_-9.0_-2.0"
+  translation -9.0 -2.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+}
+
+
+Solid {
+  name "goal_-5.0_1.0"
+  translation -5.0 1.0 0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+          emissiveColor 0 0 0
+          ambientIntensity 1
+          shininess 0
+          specularColor 0 0 0
+        }
+      }
+      geometry Box {
+        size 1 1 1
+      }
+    }
+  ]
+}
+
+
+Solid {
+  name "goal_1.0_9.0"
+  translation 1.0 9.0 0.5
   children [
     Shape {
       appearance Appearance {
@@ -5776,7 +5820,7 @@ Solid {
 
 Pioneer3at {
   name "Scout"
-  translation 9.0 5.0 0.12
+  translation -9.0 -1.0 0.12
   rotation 0 0 1 0
   controller "pioneer3at"
   extensionSlot [
