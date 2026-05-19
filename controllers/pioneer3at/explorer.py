@@ -129,8 +129,8 @@ class Explorer:
             self._set_state(ExplorerState.PLANNING_PATH)
             return
 
-        # First element is the current direction being checked.
-        scan_direction = self._scan_goal_directions[0]
+        # Use the end as a stack so finishing a direction stays O(1).
+        scan_direction = self._scan_goal_directions[-1]
         scan_position = move(self.grid_map.robot_position, scan_direction)
 
         # If this cell is no longer worth checking, finish this direction.
@@ -138,7 +138,7 @@ class Explorer:
             scan_position in self.grid_map.visited
             or not self.grid_map.can_enter(scan_position)
         ):
-            self._scan_goal_directions.pop(0)
+            self._scan_goal_directions.pop()
             self.perception.reset_goal_visible()
             return
 
@@ -149,7 +149,7 @@ class Explorer:
 
             if not accepted:
                 self._debug(f"Navigation rejected scan turn command={command.name}")
-                self._scan_goal_directions.pop(0)
+                self._scan_goal_directions.pop()
                 self.perception.reset_goal_visible()
 
             return
@@ -178,7 +178,7 @@ class Explorer:
 
         # goal_visible_ahead is False, so this direction is finished.
         self._debug(f"No far goal visible toward {scan_direction.name}")
-        self._scan_goal_directions.pop(0)
+        self._scan_goal_directions.pop()
         self.perception.reset_goal_visible()
 
     def _scan_neighbors_once(self) -> None:
