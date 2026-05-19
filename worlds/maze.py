@@ -23,9 +23,11 @@ def generate_prim_maze(
     maze = [[WALL for _ in range(width)] for _ in range(height)]
 
     def in_bounds(x: int, y: int) -> bool:
+        """Return True when a carving candidate is inside the outer wall."""
         return 1 <= x < width - 1 and 1 <= y < height - 1
 
     def add_frontier(x: int, y: int, frontier: list[tuple[int, int]]) -> None:
+        """Add two-cell-away wall candidates around a carved cell."""
         for dx, dy in [(2, 0), (-2, 0), (0, 2), (0, -2)]:
             nx, ny = x + dx, y + dy
 
@@ -115,6 +117,7 @@ def count_open_neighbours(
 
 
 def find_wall_tiles(maze: list[list[str]]) -> list[tuple[int, int]]:
+    """Return internal wall tile coordinates."""
     height = len(maze)
     width = len(maze[0])
 
@@ -127,6 +130,7 @@ def find_wall_tiles(maze: list[list[str]]) -> list[tuple[int, int]]:
 
 
 def find_dead_end_tiles(maze: list[list[str]]) -> list[tuple[int, int]]:
+    """Return internal FREE tiles with exactly one open neighbour."""
     height = len(maze)
     width = len(maze[0])
 
@@ -301,6 +305,7 @@ def generate_decision_heavy_maze(
 
 
 def print_maze(maze: list[list[str]]) -> None:
+    """Print the symbolic maze as text rows."""
     for row in maze:
         print("".join(row))
 

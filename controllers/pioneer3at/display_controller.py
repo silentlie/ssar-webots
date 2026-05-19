@@ -9,6 +9,8 @@ from domain import DIRECTION_DELTAS, Cell, Direction, Position, move
 
 @dataclass
 class DisplayState:
+    """Snapshot of explorer/navigation state to draw for one frame."""
+
     grid: dict[Position, Cell]
     visited: set[Position]
     robot_position: Position
@@ -20,6 +22,7 @@ class DisplayState:
 
     @property
     def next_step_name(self) -> str:
+        """Return the next planned direction name for display text."""
         if len(self.path) == 0:
             return "None"
 
@@ -28,6 +31,8 @@ class DisplayState:
 
 @dataclass
 class ViewTransform:
+    """Current conversion from grid cells to display pixels."""
+
     cell_size: int = 1
     map_min_x: int = 0
     map_min_y: int = 0
@@ -36,6 +41,8 @@ class ViewTransform:
 
 
 class DisplayController:
+    """Draw the explored grid, planned path, robot pose, and status text."""
+
     def __init__(
         self,
         robot: Robot,
@@ -43,6 +50,7 @@ class DisplayController:
         debug_level: DebugLevel = DebugLevel.NONE,
         display_name: str = "display",
     ) -> None:
+        """Attach to the Webots display device and initialise view state."""
         self.display = cast(Display, robot.getDevice(display_name))
         self.width = self.display.getWidth()
         self.height = self.display.getHeight()
@@ -55,6 +63,7 @@ class DisplayController:
         )
 
     def update(self, state: DisplayState) -> None:
+        """Redraw the display from a complete state snapshot."""
         path_positions = self._path_to_positions(
             state.robot_position,
             state.path,
@@ -77,6 +86,7 @@ class DisplayController:
         robot_position: Position,
         path_positions: list[Position],
     ) -> None:
+        """Fit known cells, robot position, and current path into the display."""
         positions = set(grid.keys())
         positions.add(robot_position)
         positions.update(path_positions)
@@ -99,6 +109,7 @@ class DisplayController:
         )
         cell_from_width = available_width // columns
         cell_from_height = available_height // rows
+        # The map should remain fully visible even when exploration grows large.
         self.view.cell_size = max(1, min(cell_from_width, cell_from_height))
         map_width = columns * self.view.cell_size
         map_height = rows * self.view.cell_size
@@ -110,6 +121,7 @@ class DisplayController:
         )
 
     def _clear(self) -> None:
+        """Fill the whole display with the configured background colour."""
         self.display.setColor(self.config.background_colour)
         self.display.fillRectangle(0, 0, self.width, self.height)
 
@@ -118,11 +130,13 @@ class DisplayController:
         grid: dict[Position, Cell],
         visited: set[Position],
     ) -> None:
+        """Draw all currently known map cells."""
         for position, cell in grid.items():
             colour = self._colour_for_cell(position, cell, visited)
             self._draw_cell(position, colour, inset=1)
 
     def _draw_path(self, path_positions: list[Position]) -> None:
+        """Draw every cell in the currently planned path."""
         for position in path_positions:
             self._draw_cell(
                 position,
@@ -131,6 +145,7 @@ class DisplayController:
             )
 
     def _draw_target(self, path_positions: list[Position]) -> None:
+        """Draw a highlight on the final planned path cell."""
         if len(path_positions) == 0:
             return
         self._draw_cell(
@@ -144,6 +159,7 @@ class DisplayController:
         position: Position,
         direction: Direction,
     ) -> None:
+        """Draw the robot body and heading marker."""
         centre_x, centre_y = self._cell_centre(position)
         radius = max(4, self.view.cell_size // 4)
         self.display.setColor(self.config.robot_colour)
@@ -156,10 +172,12 @@ class DisplayController:
         position: Position,
         direction: Direction,
     ) -> None:
+        """Draw a compact triangular marker showing robot heading."""
         centre_x, centre_y = self._cell_centre(position)
         arrow_length = max(5, self.view.cell_size // 3)
         arrow_width = max(3, self.view.cell_size // 6)
         dx, dy = DIRECTION_DELTAS[direction]
+        # A perpendicular vector widens the triangle base around the heading axis.
         px = -dy
         py = dx
         tip_x = centre_x + dx * arrow_length
@@ -177,6 +195,7 @@ class DisplayController:
         )
 
     def _draw_text(self, state: DisplayState) -> None:
+        """Draw compact status text at the top of the display."""
         self.display.setColor(self.config.text_colour)
         command = state.navigation_command
         if command is None:
@@ -207,6 +226,7 @@ class DisplayController:
         colour: int,
         inset: int = 1,
     ) -> None:
+        """Draw one grid cell with a valid inset at any display scale."""
         x, y = self._cell_top_left(position)
         safe_inset = min(
             max(0, inset),
@@ -219,6 +239,7 @@ class DisplayController:
         self.display.drawRectangle(x, y, self.view.cell_size, self.view.cell_size)
 
     def _cell_top_left(self, position: Position) -> tuple[int, int]:
+        """Return the display pixel coordinate for a cell's top-left corner."""
         grid_x, grid_y = position
         screen_x = (
             self.view.offset_x + (grid_x - self.view.map_min_x) * self.view.cell_size
@@ -229,6 +250,7 @@ class DisplayController:
         return screen_x, screen_y
 
     def _cell_centre(self, position: Position) -> tuple[int, int]:
+        """Return the display pixel coordinate for a cell's centre."""
         x, y = self._cell_top_left(position)
         return x + self.view.cell_size // 2, y + self.view.cell_size // 2
 
@@ -237,6 +259,7 @@ class DisplayController:
         start_position: Position,
         path: list[Direction],
     ) -> list[Position]:
+        """Convert a direction path into absolute grid positions."""
         positions: list[Position] = []
         current = start_position
         for direction in path:
@@ -250,6 +273,7 @@ class DisplayController:
         cell: Cell,
         visited: set[Position],
     ) -> int:
+        """Return the configured colour for a map cell and visit state."""
         if cell == Cell.WALL:
             return self.config.wall_colour
         if cell == Cell.DANGER:

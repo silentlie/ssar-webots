@@ -10,28 +10,37 @@ ColourMatcher = Callable[[int, int, int], bool]
 
 
 class DetectionResult(Enum):
+    """Stable colour-detection state after frame-score filtering."""
+
     DETECTED = auto()
     CLEAR = auto()
     UNCERTAIN = auto()
 
     def detected(self) -> bool:
+        """Return True when detection has been confirmed."""
         return self == DetectionResult.DETECTED
 
     def clear(self) -> bool:
+        """Return True when absence has been confirmed."""
         return self == DetectionResult.CLEAR
 
     def uncertain(self) -> bool:
+        """Return True while evidence is still mixed."""
         return self == DetectionResult.UNCERTAIN
 
 
 @dataclass(frozen=True)
 class ColourScan:
+    """Result of sampling a camera image region for a colour."""
+
     ratio: float
     matched: int
     checked: int
 
 
 class VisionPerception:
+    """Detect red danger and green goal markers from camera frames."""
+
     CAMERA_NAME = "camera"
 
     def __init__(
@@ -40,6 +49,7 @@ class VisionPerception:
         config: PerceptionConfig = PerceptionConfig(),
         debug_level: DebugLevel = DebugLevel.NONE,
     ) -> None:
+        """Enable the camera and initialise frame scores."""
         self.config = config
         self.logger = DebugLogger("VisionPerception", debug_level)
         timestep = int(robot.getBasicTimeStep())
@@ -60,6 +70,7 @@ class VisionPerception:
         )
 
     def check_danger_ahead(self) -> DetectionResult:
+        """Detect a close red danger marker in the cell ahead."""
         result, self.danger_score = self._check_colour(
             context="check_danger_ahead",
             score=self.danger_score,
@@ -73,6 +84,7 @@ class VisionPerception:
         return result
 
     def check_goal_ahead(self) -> DetectionResult:
+        """Detect a close green goal marker before entering the next cell."""
         result, self.goal_score = self._check_colour(
             context="check_goal_ahead",
             score=self.goal_score,
@@ -86,6 +98,7 @@ class VisionPerception:
         return result
 
     def check_goal_visible_ahead(self) -> DetectionResult:
+        """Detect a farther green goal marker in the centred forward view."""
         result, self.goal_visible_score = self._check_colour(
             context="check_goal_visible_ahead",
             score=self.goal_visible_score,
@@ -99,20 +112,24 @@ class VisionPerception:
         return result
 
     def reset_all(self) -> None:
+        """Reset all colour detection frame scores."""
         self.danger_score = 0
         self.goal_score = 0
         self.goal_visible_score = 0
         self.logger.trace("reset_all", "all vision scores reset")
 
     def reset_danger(self) -> None:
+        """Reset the danger detection frame score."""
         self.danger_score = 0
         self.logger.trace("reset_danger", "danger score reset")
 
     def reset_goal(self) -> None:
+        """Reset the close-goal detection frame score."""
         self.goal_score = 0
         self.logger.trace("reset_goal", "goal score reset")
 
     def reset_goal_visible(self) -> None:
+        """Reset the far-goal visibility frame score."""
         self.goal_visible_score = 0
         self.logger.trace("reset_goal_visible", "goal visible score reset")
 
@@ -127,6 +144,7 @@ class VisionPerception:
         confirm: int,
         clear: int,
     ) -> tuple[DetectionResult, int]:
+        """Scan a colour and update the bounded frame score."""
         scan = self._scan_colour(
             region_ratio=region_ratio,
             matcher=matcher,
@@ -161,6 +179,7 @@ class VisionPerception:
         region_ratio: float,
         matcher: ColourMatcher,
     ) -> ColourScan:
+        """Return colour-match counts for a centred image region."""
         image = self.camera.getImage()
         width = self.camera.getWidth()
         height = self.camera.getHeight()
@@ -196,6 +215,7 @@ class VisionPerception:
         height: int,
         ratio: float,
     ) -> tuple[int, int, int, int]:
+        """Return clamped bounds for a centred image region."""
         ratio = max(0.1, min(1.0, ratio))
         region_width = max(1, int(width * ratio))
         region_height = max(1, int(height * ratio))
@@ -206,6 +226,7 @@ class VisionPerception:
         return x_start, x_end, y_start, y_end
 
     def _is_red(self, red: int, green: int, blue: int) -> bool:
+        """Return True when RGB values match the configured red marker."""
         strongest_non_red = max(green, blue)
         return (
             red >= self.config.red_min
@@ -215,6 +236,7 @@ class VisionPerception:
         )
 
     def _is_green(self, red: int, green: int, blue: int) -> bool:
+        """Return True when RGB values match the configured green marker."""
         strongest_non_green = max(red, blue)
         return (
             green >= self.config.green_min
@@ -230,6 +252,7 @@ class VisionPerception:
         confirm: int,
         clear: int,
     ) -> int:
+        """Move a frame score one step towards detected or clear."""
         if candidate:
             score += 1
         else:
@@ -242,6 +265,7 @@ class VisionPerception:
         confirm: int,
         clear: int,
     ) -> DetectionResult:
+        """Convert a bounded frame score into a stable detection result."""
         if score >= confirm:
             return DetectionResult.DETECTED
         if score <= -clear:

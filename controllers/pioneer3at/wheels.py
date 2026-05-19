@@ -6,6 +6,8 @@ from utils import clamp
 
 
 class Wheels:
+    """Motor helper for the Pioneer 3AT four-wheel differential drive."""
+
     MAX_SPEED = 6.4
 
     def __init__(
@@ -16,6 +18,7 @@ class Wheels:
         curve_ratio: float = 0.15,
         debug_level: DebugLevel = DebugLevel.NONE,
     ) -> None:
+        """Load wheel motors and switch them to velocity-control mode."""
         self.logger = DebugLogger("Wheels", debug_level)
         self.default_speed = clamp(default_speed, 0.0, self.MAX_SPEED)
         self.default_turn_speed = clamp(default_turn_speed, 0.0, self.MAX_SPEED)
@@ -45,6 +48,7 @@ class Wheels:
         self.logger.debug("__init__", "Wheel motors initialised")
 
     def clamp_speed(self, speed: float) -> float:
+        """Clamp a signed wheel speed to the motor speed limits."""
         clamped = clamp(speed, -self.MAX_SPEED, self.MAX_SPEED)
         if clamped != speed:
             self.logger.debug(
@@ -54,6 +58,7 @@ class Wheels:
         return clamped
 
     def speed_magnitude(self, speed: float, context: str) -> float:
+        """Return a non-negative clamped speed magnitude for a command."""
         if speed < 0.0:
             self.logger.warn(
                 context,
@@ -69,6 +74,7 @@ class Wheels:
         return clamped
 
     def clamp_turn_ratio(self, turn_ratio: float) -> float:
+        """Clamp a curve turn ratio into [0.0, 1.0]."""
         clamped = clamp(turn_ratio, 0.0, 1.0)
         if clamped != turn_ratio:
             self.logger.debug(
@@ -78,6 +84,7 @@ class Wheels:
         return clamped
 
     def set_speed(self, left_speed: float, right_speed: float) -> None:
+        """Set all left and right wheel motor velocities."""
         raw_left_speed = left_speed
         raw_right_speed = right_speed
         left_speed = self.clamp_speed(left_speed)
@@ -95,10 +102,12 @@ class Wheels:
             motor.setVelocity(right_speed)
 
     def stop(self) -> None:
+        """Stop all wheels."""
         self.logger.trace("stop", "Stopping all wheels")
         self.set_speed(0.0, 0.0)
 
     def forward(self, speed: float | None = None) -> None:
+        """Drive straight forward at speed or the default speed."""
         requested_speed = speed
         speed = self.default_speed if speed is None else speed
         speed = self.speed_magnitude(speed, "forward")
@@ -109,6 +118,7 @@ class Wheels:
         self.set_speed(speed, speed)
 
     def backward(self, speed: float | None = None) -> None:
+        """Drive straight backward at speed or the default speed."""
         requested_speed = speed
         speed = self.default_speed if speed is None else speed
         speed = self.speed_magnitude(speed, "backward")
@@ -119,6 +129,7 @@ class Wheels:
         self.set_speed(-speed, -speed)
 
     def turn_left(self, speed: float | None = None) -> None:
+        """Turn in place to the left."""
         requested_speed = speed
         speed = self.default_turn_speed if speed is None else speed
         speed = self.speed_magnitude(speed, "turn_left")
@@ -129,6 +140,7 @@ class Wheels:
         self.set_speed(-speed, speed)
 
     def turn_right(self, speed: float | None = None) -> None:
+        """Turn in place to the right."""
         requested_speed = speed
         speed = self.default_turn_speed if speed is None else speed
         speed = self.speed_magnitude(speed, "turn_right")
@@ -168,6 +180,7 @@ class Wheels:
         speed: float | None = None,
         turn_ratio: float | None = None,
     ) -> None:
+        """Drive an arc with the right side scaled by turn_ratio."""
         requested_speed = speed
         requested_turn_ratio = turn_ratio
         speed = self.default_speed if speed is None else speed

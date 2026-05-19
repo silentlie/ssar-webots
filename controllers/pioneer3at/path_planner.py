@@ -12,15 +12,19 @@ class PathAlgorithm(Enum):
 
 
 class PathPlanner:
+    """Plan grid paths through cells that GridMap marks as enterable."""
+
     def __init__(
         self,
         grid_map: GridMap,
         algorithm: PathAlgorithm = PathAlgorithm.A_STAR,
     ) -> None:
+        """Create a planner using the selected algorithm."""
         self.grid_map = grid_map
         self.algorithm = algorithm
 
     def set_algorithm(self, algorithm: PathAlgorithm) -> None:
+        """Change the path-planning algorithm used by find_path."""
         self.algorithm = algorithm
 
     def find_path(
@@ -28,6 +32,7 @@ class PathPlanner:
         start: Position,
         target: Position,
     ) -> list[Direction] | None:
+        """Return a direction list from start to target, or None if unreachable."""
         if self.algorithm == PathAlgorithm.BFS:
             return self.bfs(start, target)
         if self.algorithm == PathAlgorithm.A_STAR:
@@ -39,6 +44,7 @@ class PathPlanner:
         start: Position,
         target: Position,
     ) -> list[Direction] | None:
+        """Find the shortest path using breadth-first search."""
         if start == target:
             return []
         if not self.grid_map.can_enter(target):
@@ -66,6 +72,7 @@ class PathPlanner:
         start: Position,
         target: Position,
     ) -> list[Direction] | None:
+        """Find the shortest path using A* with Manhattan distance."""
         if start == target:
             return []
         if not self.grid_map.can_enter(target):
@@ -74,6 +81,7 @@ class PathPlanner:
         heapq.heappush(open_heap, (0, 0, 0, start))
         cost_so_far: dict[Position, int] = {start: 0}
         previous: dict[Position, tuple[Position, Direction]] = {}
+        # The counter avoids comparing Position tuples when heap priorities tie.
         counter = 0
         while open_heap:
             _, current_cost, _, current = heapq.heappop(open_heap)
@@ -103,6 +111,7 @@ class PathPlanner:
         return None
 
     def _manhattan_distance(self, a: Position, b: Position) -> int:
+        """Return Manhattan distance between two grid positions."""
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
     def _reconstruct_path(
@@ -111,6 +120,7 @@ class PathPlanner:
         start: Position,
         target: Position,
     ) -> list[Direction]:
+        """Walk parent links backward and return directions from start to target."""
         path: list[Direction] = []
         current = target
         while current != start:

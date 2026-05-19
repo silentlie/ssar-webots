@@ -31,21 +31,27 @@ class NavigationPhase(Enum):
 
 @dataclass
 class AlignmentState:
+    """Counters used while wall alignment phases wait for stable readings."""
+
     parallel_stable_steps: int = 0
     parallel_invalid_steps: int = 0
     centre_invalid_steps: int = 0
     centre_move_steps: int = 0
 
     def reset_parallel(self) -> None:
+        """Reset counters used by parallel wall alignment."""
         self.parallel_stable_steps = 0
         self.parallel_invalid_steps = 0
 
     def reset_centre(self) -> None:
+        """Reset counters used by centre alignment."""
         self.centre_invalid_steps = 0
         self.centre_move_steps = 0
 
 
 class Navigation:
+    """Execute high-level movement commands with odometry and sonar feedback."""
+
     def __init__(
         self,
         wheels: Wheels,
@@ -55,6 +61,7 @@ class Navigation:
         config: NavigationConfig = NavigationConfig(),
         debug_level: DebugLevel = DebugLevel.NONE,
     ) -> None:
+        """Create a navigation state machine for one robot."""
         self.wheels = wheels
         self.odometry = odometry
         self.grid_map = grid_map
@@ -68,12 +75,15 @@ class Navigation:
 
     @property
     def active_phase(self) -> NavigationPhase | None:
+        """Return the current internal navigation phase, if any."""
         return self._active_phase
 
     def is_idle(self) -> bool:
+        """Return True when navigation can accept a public command."""
         return self._active_phase is None
 
     def send_command(self, command: NavigationCommand) -> bool:
+        """Start a public navigation command when the state machine is idle."""
         if command == NavigationCommand.RECOVER:
             return self._start_recovery()
         if not self.is_idle():
@@ -94,6 +104,7 @@ class Navigation:
         return True
 
     def update(self) -> None:
+        """Advance odometry and progress the active navigation phase."""
         self.odometry.update()
         if self._active_phase is None:
             self.logger.trace("update", "Idle; stopping wheels")
@@ -105,6 +116,7 @@ class Navigation:
         self._proceed_active_phase()
 
     def _start_recovery(self) -> bool:
+        """Interrupt the current phase and return to the action start pose."""
         if self._active_phase is None:
             self.logger.debug(
                 "_start_recovery",
@@ -129,6 +141,7 @@ class Navigation:
         return True
 
     def _start_parallel_alignment(self) -> None:
+        """Start the wall-parallel alignment phase."""
         self.wheels.stop()
         self.alignment.reset_parallel()
         self._set_phase(NavigationPhase.ALIGN_PARALLEL, "_start_parallel_alignment")
@@ -140,6 +153,7 @@ class Navigation:
         )
 
     def _start_centre_alignment_if_needed(self) -> None:
+        """Start centre alignment when both corridor side walls are visible."""
         diff = self.sensors.left_right_diff()
         if diff is None:
             self.logger.debug(
@@ -167,6 +181,7 @@ class Navigation:
         )
 
     def _proceed_active_phase(self) -> None:
+        """Dispatch wheel control for the current internal phase."""
         match self._active_phase:
             case NavigationPhase.MOVE_FORWARD:
                 self._proceed_forward()
@@ -190,6 +205,7 @@ class Navigation:
                 self.wheels.stop()
 
     def _proceed_forward(self) -> None:
+        """Drive forward while applying small wall-parallel corrections."""
         error = self.sensors.parallel_error()
         if error is None:
             self.logger.trace(
@@ -218,6 +234,7 @@ class Navigation:
             self.wheels.curve_left(turn_ratio=turn_ratio)
 
     def _parallel_turn_ratio(self, error: float) -> float:
+        """Convert a parallel wall error into a wheel speed ratio."""
         correction = abs(error) * self.config.parallel_forward_kp
         correction = min(correction, self.config.max_parallel_forward_correction)
         return 1.0 - correction
@@ -261,6 +278,7 @@ class Navigation:
         self.wheels.stop()
 
     def _proceed_align_parallel(self) -> None:
+        """Rotate until side-wall readings are parallel or unavailable."""
         parallel_error = self.sensors.parallel_error()
         if parallel_error is None:
             self.wheels.stop()
@@ -310,6 +328,7 @@ class Navigation:
             self.wheels.turn_left()
 
     def _proceed_align_centre(self) -> None:
+        """Move sideways after a 90-degree turn until the corridor is centred."""
         diff = self.sensors.front_back_diff()
         if diff is None:
             self.wheels.stop()
@@ -365,6 +384,7 @@ class Navigation:
             self.wheels.forward()
 
     def _active_phase_complete(self) -> bool:
+        """Return True when odometry says the active phase is complete."""
         match self._active_phase:
             case NavigationPhase.MOVE_FORWARD:
                 return self.odometry.forward_complete()
@@ -391,6 +411,7 @@ class Navigation:
                 return False
 
     def _finish_active_phase(self) -> None:
+        """Apply grid-map effects and transition after a completed phase."""
         finished_phase = self._active_phase
         self.wheels.stop()
         self.logger.debug(
@@ -443,6 +464,7 @@ class Navigation:
                 raise ValueError(f"Unsupported navigation phase: {finished_phase}")
 
     def _phase_from_command(self, command: NavigationCommand) -> NavigationPhase:
+        """Map a public command onto its initial internal phase."""
         match command:
             case NavigationCommand.MOVE_FORWARD:
                 return NavigationPhase.MOVE_FORWARD
@@ -458,6 +480,7 @@ class Navigation:
                 raise ValueError(f"Unsupported navigation command: {command}")
 
     def _set_phase(self, phase: NavigationPhase | None, context: str) -> None:
+        """Store the active phase and log meaningful transitions."""
         if self._active_phase == phase:
             return
 

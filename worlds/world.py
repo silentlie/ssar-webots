@@ -103,6 +103,7 @@ Solid {{
 
 
 def wall_block(x: float, y: float, size: float) -> str:
+    """Create a grey collidable wall block."""
     return block(
         name=f"wall_{x}_{y}",
         x=x,
@@ -141,6 +142,7 @@ def goal_block(x: float, y: float, size: float) -> str:
 
 
 def robot_spawn(x: float, y: float) -> str:
+    """Create the Pioneer 3AT robot node with camera and display devices."""
     return f"""
 Pioneer3at {{
   name "Scout"
@@ -226,6 +228,7 @@ def save_world(
     maze: list[list[str]],
     tile_size: float = TILE_SIZE,
 ) -> None:
+    """Write a generated Webots world to filename."""
     world_data = maze_to_world(
         maze=maze,
         tile_size=tile_size,

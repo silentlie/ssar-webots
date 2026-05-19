@@ -35,19 +35,23 @@ DIRECTION_DELTAS: dict[Direction, Position] = {
 
 
 def move(position: Position, direction: Direction) -> Position:
+    """Return the grid position one cell from position in direction."""
     dx, dy = DIRECTION_DELTAS[direction]
     return (position[0] + dx, position[1] + dy)
 
 
 def left_of(direction: Direction) -> Direction:
+    """Return the direction 90 degrees left of direction."""
     return Direction((direction.value - 1) % 4)
 
 
 def right_of(direction: Direction) -> Direction:
+    """Return the direction 90 degrees right of direction."""
     return Direction((direction.value + 1) % 4)
 
 
 def opposite_of(direction: Direction) -> Direction:
+    """Return the direction 180 degrees from direction."""
     return Direction((direction.value + 2) % 4)
 
 
@@ -55,4 +59,5 @@ def relative_to_absolute(
     robot_direction: Direction,
     relative_direction: RelativeDirection,
 ) -> Direction:
+    """Convert a robot-relative direction into a grid-absolute direction."""
     return Direction((robot_direction.value + relative_direction.value) % 4)
