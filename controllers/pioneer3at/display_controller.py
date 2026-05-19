@@ -1,7 +1,7 @@
 from typing import cast
 
 from controller import Display, Robot
-from gridMap import Cell, Direction, Position, move
+from grid_map import Cell, Direction, Position, move
 
 
 class DisplayController:

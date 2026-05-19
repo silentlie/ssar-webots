@@ -1,7 +1,7 @@
 from enum import Enum
 
-from displayController import DisplayController
-from gridMap import (
+from display_controller import DisplayController
+from grid_map import (
     Cell,
     Direction,
     GridMap,
@@ -13,9 +13,9 @@ from gridMap import (
     right_of,
 )
 from navigation import Navigation, NavigationCommand
-from pathPlanner import PathPlanner
+from path_planner import PathPlanner
 from sensors import Sensors
-from visionPerception import VisionPerception
+from vision_perception import VisionPerception
 
 
 class ExplorerState(Enum):
@@ -158,11 +158,11 @@ class Explorer:
         # Now facing this neighbour; check far goal.
         goal_visible_ahead = self.perception.check_goal_visible_ahead()
 
-        if goal_visible_ahead is None:
+        if goal_visible_ahead.uncertain():
             self._debug("Goal-visible scan uncertain; waiting")
             return
 
-        if goal_visible_ahead is True:
+        if goal_visible_ahead.detected():
             self._debug(
                 f"Far goal visible towards {scan_direction.name}; "
                 f"prioritising next cell {scan_position}"
@@ -313,7 +313,7 @@ class Explorer:
         if command != NavigationCommand.MOVE_FORWARD:
             goal_visible_ahead = self.perception.check_goal_visible_ahead()
 
-            if goal_visible_ahead is True:
+            if goal_visible_ahead.detected():
                 forward_position = move(
                     self.grid_map.robot_position,
                     self.grid_map.robot_direction,
@@ -351,7 +351,7 @@ class Explorer:
             goal_ahead = self.perception.check_goal_ahead()
 
             # Danger has priority over goal.
-            if danger_ahead is True:
+            if danger_ahead.detected():
                 self._debug(
                     f"Vision detected danger ahead at {next_position}; "
                     "marking DANGER and replanning"
@@ -366,17 +366,17 @@ class Explorer:
                 self._set_state(ExplorerState.PLANNING_PATH)
                 return
 
-            if danger_ahead is None:
+            if danger_ahead.uncertain():
                 self._debug(
                     "Vision danger check uncertain; waiting before MOVE_FORWARD"
                 )
                 return
 
-            if goal_ahead is None:
+            if goal_ahead.uncertain():
                 self._debug("Vision goal check uncertain; waiting before MOVE_FORWARD")
                 return
 
-            if goal_ahead is True:
+            if goal_ahead.detected():
                 self._debug(
                     f"Vision detected goal ahead at {next_position}; marking GOAL"
                 )

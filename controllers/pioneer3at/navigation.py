@@ -1,6 +1,6 @@
 from enum import Enum
 
-from gridMap import GridMap
+from grid_map import GridMap
 from odometry import Odometry
 from sensors import Sensors
 from wheels import Wheels

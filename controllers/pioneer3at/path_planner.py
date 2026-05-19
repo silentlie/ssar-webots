@@ -1,13 +1,14 @@
-from collections import deque
-from enum import Enum
 import heapq
+from collections import deque
+from enum import Enum, auto
 
-from gridMap import Direction, GridMap, Position, move
+from domain import Direction, Position, move
+from grid_map import GridMap
 
 
 class PathAlgorithm(Enum):
-    BFS = "bfs"
-    ASTAR = "astar"
+    BFS = auto()
+    A_STAR = auto()
 
 
 class PathPlanner:
@@ -16,7 +17,7 @@ class PathPlanner:
     def __init__(
         self,
         grid_map: GridMap,
-        algorithm: PathAlgorithm = PathAlgorithm.ASTAR,
+        algorithm: PathAlgorithm = PathAlgorithm.A_STAR,
     ) -> None:
         self.grid_map = grid_map
         self.algorithm = algorithm
@@ -32,8 +33,8 @@ class PathPlanner:
         """Return a direction list from start to target, or None if unreachable."""
         if self.algorithm == PathAlgorithm.BFS:
             return self.bfs(start, target)
-        if self.algorithm == PathAlgorithm.ASTAR:
-            return self.astar(start, target)
+        if self.algorithm == PathAlgorithm.A_STAR:
+            return self.a_star(start, target)
         raise ValueError(f"Unsupported path planning algorithm: {self.algorithm}")
 
     def bfs(
@@ -63,7 +64,7 @@ class PathPlanner:
                 queue.append(next_position)
         return None
 
-    def astar(
+    def a_star(
         self,
         start: Position,
         target: Position,
@@ -72,15 +73,17 @@ class PathPlanner:
             return []
         if not self.grid_map.can_enter(target):
             return None
-        open_list: list[tuple[int, int, Position]] = []
-        heapq.heappush(open_list, (0, 0, start))
+        open_heap: list[tuple[int, int, int, Position]] = []
+        heapq.heappush(open_heap, (0, 0, 0, start))
         cost_so_far: dict[Position, int] = {start: 0}
         previous: dict[Position, tuple[Position, Direction]] = {}
         # Heap entries include a monotonic counter so equal priorities never
         # depend on Position tuple ordering.
         counter = 0
-        while open_list:
-            _, _, current = heapq.heappop(open_list)
+        while open_heap:
+            _, current_cost, _, current = heapq.heappop(open_heap)
+            if current_cost != cost_so_far[current]:
+                continue
             if current == target:
                 return self._reconstruct_path(previous, start, target)
             for direction in Direction:
@@ -97,7 +100,10 @@ class PathPlanner:
                         next_position, target
                     )
                     counter += 1
-                    heapq.heappush(open_list, (priority, counter, next_position))
+                    heapq.heappush(
+                        open_heap,
+                        (priority, new_cost, counter, next_position),
+                    )
                     previous[next_position] = (current, direction)
         return None
 

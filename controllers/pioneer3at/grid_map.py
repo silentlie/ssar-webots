@@ -1,56 +1,15 @@
 """Grid-space data model for exploration and path planning."""
 
-from enum import Enum
-
-# Grid coordinates are (x, y), with y increasing downward on the display.
-Position = tuple[int, int]
-
-
-class Direction(Enum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
-
-
-class RelativeDirection(Enum):
-    FRONT = 0
-    RIGHT = 1
-    BACK = 2
-    LEFT = 3
-
-
-class Cell(Enum):
-    UNKNOWN = 0
-    FREE = 1
-    WALL = 2
-    DANGER = 3
-    GOAL = 4
-
-
-DIRECTION_DELTAS: dict[Direction, Position] = {
-    Direction.UP: (0, -1),
-    Direction.RIGHT: (1, 0),
-    Direction.DOWN: (0, 1),
-    Direction.LEFT: (-1, 0),
-}
-
-
-def move(position: Position, direction: Direction) -> Position:
-    delta = DIRECTION_DELTAS[direction]
-    return (position[0] + delta[0], position[1] + delta[1])
-
-
-def left_of(direction: Direction) -> Direction:
-    return Direction((direction.value - 1) % 4)
-
-
-def right_of(direction: Direction) -> Direction:
-    return Direction((direction.value + 1) % 4)
-
-
-def opposite_of(direction: Direction) -> Direction:
-    return Direction((direction.value + 2) % 4)
+from domain import (
+    Cell,
+    Direction,
+    Position,
+    RelativeDirection,
+    left_of,
+    move,
+    opposite_of,
+    right_of,
+)
 
 
 class GridMap:

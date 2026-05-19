@@ -1,29 +1,36 @@
 """Webots entry point for the autonomous Pioneer 3AT controller."""
 
-from visionPerception import VisionPerception
+from config import OdometryConfig
 from controller import Robot
-from displayController import DisplayController
+from debug_logger import DebugLevel
+from display_controller import DisplayController
 from explorer import Explorer
-from gridMap import GridMap
+from grid_map import GridMap
 from navigation import Navigation
 from odometry import Odometry
 from sensors import Sensors
+from vision_perception import VisionPerception
 from wheels import Wheels
 
 TILE_SIZE = 1
 DEBUG = False
+DEBUG_LEVEL = DebugLevel.DEBUG if DEBUG else DebugLevel.NONE
 START_DELAY_SECONDS = 1.0
 
 robot = Robot()
 timestep = int(robot.getBasicTimeStep())
-sensors = Sensors(robot, debug=DEBUG)
-vision = VisionPerception(robot, debug=DEBUG)
-wheels = Wheels(robot, default_turn_speed=3)
-odometry = Odometry(robot, TILE_SIZE, debug=DEBUG)
-gridMap = GridMap()
-navigation = Navigation(wheels, odometry, gridMap, sensors, debug=DEBUG)
+sensors = Sensors(robot, debug_level=DEBUG_LEVEL)
+vision = VisionPerception(robot, debug_level=DEBUG_LEVEL)
+wheels = Wheels(robot, default_turn_speed=2, debug_level=DEBUG_LEVEL)
+odometry = Odometry(
+    robot,
+    config=OdometryConfig(tile_size=TILE_SIZE),
+    debug_level=DEBUG_LEVEL,
+)
+grid_map = GridMap()
+navigation = Navigation(wheels, odometry, grid_map, sensors, debug=DEBUG)
 display = DisplayController(robot, debug=DEBUG)
-explorer = Explorer(sensors, gridMap, navigation, display, vision, debug=DEBUG)
+explorer = Explorer(sensors, grid_map, navigation, display, vision, debug=DEBUG)
 
 start_time = robot.getTime()
 if DEBUG:

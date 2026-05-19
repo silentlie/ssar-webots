@@ -1,7 +1,20 @@
+from dataclasses import dataclass
 from typing import cast
 
+from config import SensorConfig
 from controller import DistanceSensor, Robot
-from gridMap import RelativeDirection
+from debug_logger import DebugLevel, DebugLogger
+from domain import RelativeDirection
+
+SonarGroup = tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class SideReadings:
+    left_front: float
+    left_rear: float
+    right_front: float
+    right_rear: float
 
 
 class Sensors:
@@ -12,104 +25,108 @@ class Sensors:
     closer obstacles, so thresholds are calibrated against those raw readings.
     """
 
+    DIR_SONARS: dict[RelativeDirection, SonarGroup] = {
+        RelativeDirection.FRONT: ("so2", "so3", "so4", "so5"),
+        RelativeDirection.LEFT: ("so0", "so1", "so14", "so15"),
+        RelativeDirection.BACK: ("so10", "so11", "so12", "so13"),
+        RelativeDirection.RIGHT: ("so6", "so7", "so8", "so9"),
+    }
+
+    SIDE_SONARS: dict[str, SonarGroup] = {
+        "left_front": ("so0", "so1"),
+        "left_rear": ("so14", "so15"),
+        "right_front": ("so6", "so7"),
+        "right_rear": ("so8", "so9"),
+    }
+
     def __init__(
         self,
         robot: Robot,
-        blocked_threshold: float = 900.0,
-        too_close_threshold: float = 980.0,
-        debug: bool = False,
+        config: SensorConfig = SensorConfig(),
+        debug_level: DebugLevel = DebugLevel.NONE,
     ) -> None:
-        self.robot = robot
-        self.timestep = int(robot.getBasicTimeStep())
-        self.debug = debug
+        self.config = config
+        self.logger = DebugLogger("Sensors", debug_level)
 
         self.sonars: dict[str, DistanceSensor] = {}
 
         for i in range(16):
             name = f"so{i}"
-            sensor = cast(DistanceSensor, self.robot.getDevice(name))
-            sensor.enable(self.timestep)
+            sensor = cast(DistanceSensor, robot.getDevice(name))
+            timestep = int(robot.getBasicTimeStep())
+            sensor.enable(timestep)
             self.sonars[name] = sensor
 
-        self.direction_sonars: dict[RelativeDirection, list[str]] = {
-            RelativeDirection.FRONT: ["so2", "so3", "so4", "so5"],
-            RelativeDirection.LEFT: ["so0", "so1", "so14", "so15"],
-            RelativeDirection.BACK: ["so10", "so11", "so12", "so13"],
-            RelativeDirection.RIGHT: ["so6", "so7", "so8", "so9"],
-        }
+        self._parallel_filtered: float | None = None
+        self._centre_filtered: float | None = None
 
-        # These are sonar raw-value thresholds, not metres.
-        self.blocked_threshold = blocked_threshold
-        self.too_close_threshold = too_close_threshold
+        self.logger.debug(
+            "__init__",
+            f"blocked={self.config.blocked}, "
+            f"too_close={self.config.too_close}, "
+            f"parallel_conflict={self.config.parallel_conflict}, "
+            f"parallel_alpha={self.config.parallel_alpha}, "
+            f"centre_alpha={self.config.centre_alpha}",
+        )
 
-        self.side_sonars: dict[str, list[str]] = {
-            "left_front": ["so0", "so1"],
-            "left_rear": ["so14", "so15"],
-            "right_front": ["so6", "so7"],
-            "right_rear": ["so8", "so9"],
-        }
+    def _raw(self, names: SonarGroup) -> list[float]:
+        return [self.sonars[name].getValue() for name in names]
 
-        # Use a slightly lower threshold than blocked_threshold if wall detection
-        # drops in and out too often.
-        self.side_wall_threshold = self.blocked_threshold
+    def _avg(self, names: SonarGroup) -> float:
+        values = self._raw(names)
+        active = [value for value in values if value > 0.0]
 
-        self.parallel_conflict_threshold = 15.0
-        self.filtered_parallel_error: float | None = None
-        self.parallel_smoothing = 0.7
-
-        self.filtered_left_right_diff: float | None = None
-        self.left_right_smoothing = 0.8
-
-    def _raw_values(self, sensor_names: list[str]) -> list[float]:
-        return [self.sonars[name].getValue() for name in sensor_names]
-
-    def _average_proximity(self, sensor_names: list[str]) -> float:
-        values = self._raw_values(sensor_names)
-        detected_values = [value for value in values if value > 0.0]
-
-        if len(detected_values) == 0:
+        if len(active) == 0:
             return 0.0
 
-        return sum(detected_values) / len(detected_values)
+        return sum(active) / len(active)
 
     def is_direction_blocked(self, direction: RelativeDirection) -> bool:
-        proximity = self._average_proximity(self.direction_sonars[direction])
-        return proximity >= self.blocked_threshold
+        proximity = self._avg(self.DIR_SONARS[direction])
+        return proximity >= self.config.blocked
 
     def is_direction_too_close(self, direction: RelativeDirection) -> bool:
-        proximity = self._average_proximity(self.direction_sonars[direction])
-        return proximity >= self.too_close_threshold
+        proximity = self._avg(self.DIR_SONARS[direction])
+        return proximity >= self.config.too_close
 
     def is_direction_free(self, direction: RelativeDirection) -> bool:
         return not self.is_direction_blocked(direction)
 
     def scan_neighbours(self) -> dict[RelativeDirection, bool]:
         """Return whether each adjacent grid direction is clear enough to enter."""
-        neighbours: dict[RelativeDirection, bool] = {}
+        neighbours = {
+            direction: self.is_direction_free(direction)
+            for direction in RelativeDirection
+        }
 
-        for direction in RelativeDirection:
-            neighbours[direction] = self.is_direction_free(direction)
+        self.logger.debug(
+            "scan_neighbours",
+            ", ".join(
+                f"{direction.name}={'FREE' if is_free else 'BLOCKED'}"
+                for direction, is_free in neighbours.items()
+            ),
+        )
 
         return neighbours
 
-    def _side_values(self) -> dict[str, float]:
-        return {
-            "left_front": self._average_proximity(self.side_sonars["left_front"]),
-            "left_rear": self._average_proximity(self.side_sonars["left_rear"]),
-            "right_front": self._average_proximity(self.side_sonars["right_front"]),
-            "right_rear": self._average_proximity(self.side_sonars["right_rear"]),
-        }
-
-    def _left_wall_reliable(self, side_values: dict[str, float]) -> bool:
-        return (
-            side_values["left_front"] >= self.side_wall_threshold
-            and side_values["left_rear"] >= self.side_wall_threshold
+    def _sides(self) -> SideReadings:
+        return SideReadings(
+            left_front=self._avg(self.SIDE_SONARS["left_front"]),
+            left_rear=self._avg(self.SIDE_SONARS["left_rear"]),
+            right_front=self._avg(self.SIDE_SONARS["right_front"]),
+            right_rear=self._avg(self.SIDE_SONARS["right_rear"]),
         )
 
-    def _right_wall_reliable(self, side_values: dict[str, float]) -> bool:
+    def _left_ok(self, sides: SideReadings) -> bool:
         return (
-            side_values["right_front"] >= self.side_wall_threshold
-            and side_values["right_rear"] >= self.side_wall_threshold
+            sides.left_front >= self.config.blocked
+            and sides.left_rear >= self.config.blocked
+        )
+
+    def _right_ok(self, sides: SideReadings) -> bool:
+        return (
+            sides.right_front >= self.config.blocked
+            and sides.right_rear >= self.config.blocked
         )
 
     def parallel_error(self) -> float | None:
@@ -120,66 +137,64 @@ class Sensors:
         right wall, so navigation should steer right. Returns None when the side
         wall readings are not reliable enough to use.
         """
-        side_values = self._side_values()
+        sides = self._sides()
 
-        left_reliable = self._left_wall_reliable(side_values)
-        right_reliable = self._right_wall_reliable(side_values)
+        left_ok = self._left_ok(sides)
+        right_ok = self._right_ok(sides)
 
         errors: list[float] = []
 
-        if left_reliable:
-            left_error = side_values["left_front"] - side_values["left_rear"]
-            errors.append(left_error)
+        if left_ok:
+            errors.append(sides.left_front - sides.left_rear)
 
-        if right_reliable:
-            right_error = -(side_values["right_front"] - side_values["right_rear"])
-            errors.append(right_error)
+        if right_ok:
+            errors.append(-(sides.right_front - sides.right_rear))
 
-        self._debug_print(
-            "[Sensors.parallel] "
-            f"LF={side_values['left_front']:.2f}, "
-            f"LR={side_values['left_rear']:.2f}, "
-            f"RF={side_values['right_front']:.2f}, "
-            f"RR={side_values['right_rear']:.2f}, "
-            f"left_ok={left_reliable}, "
-            f"right_ok={right_reliable}, "
-            f"errors={errors}"
+        self.logger.trace(
+            "parallel_error",
+            f"LF={sides.left_front:.2f}, "
+            f"LR={sides.left_rear:.2f}, "
+            f"RF={sides.right_front:.2f}, "
+            f"RR={sides.right_rear:.2f}, "
+            f"left_ok={left_ok}, "
+            f"right_ok={right_ok}, "
+            f"errors={errors}",
         )
 
         if len(errors) == 0:
-            self.filtered_parallel_error = None
+            self._parallel_filtered = None
             return None
 
         if (
             len(errors) == 2
             and errors[0] * errors[1] < 0.0
-            and abs(errors[0]) > self.parallel_conflict_threshold
-            and abs(errors[1]) > self.parallel_conflict_threshold
+            and abs(errors[0]) > self.config.parallel_conflict
+            and abs(errors[1]) > self.config.parallel_conflict
         ):
             # Strong opposite-sign readings usually mean the side walls disagree
             # too much for a single steering correction to be trustworthy.
-            self._debug_print(
-                "[Sensors.parallel] conflict detected, ignoring correction"
+            self.logger.debug(
+                "parallel_error",
+                "conflict detected, ignoring correction",
             )
             return None
 
-        raw_error = sum(errors) / len(errors)
+        raw = sum(errors) / len(errors)
 
-        if self.filtered_parallel_error is None:
-            self.filtered_parallel_error = raw_error
+        if self._parallel_filtered is None:
+            self._parallel_filtered = raw
         else:
-            self.filtered_parallel_error = (
-                self.parallel_smoothing * self.filtered_parallel_error
-                + (1.0 - self.parallel_smoothing) * raw_error
+            self._parallel_filtered = (
+                self.config.parallel_alpha * self._parallel_filtered
+                + (1.0 - self.config.parallel_alpha) * raw
             )
 
-        self._debug_print(
-            "[Sensors.parallel] "
-            f"raw={raw_error:.2f}, "
-            f"filtered={self.filtered_parallel_error:.2f}"
+        self.logger.trace(
+            "parallel_error",
+            f"raw={raw:.2f}, filtered={self._parallel_filtered:.2f}",
         )
 
-        return self.filtered_parallel_error
+        return self._parallel_filtered
 
     def left_right_diff(self) -> float | None:
         """
@@ -189,43 +204,42 @@ class Sensors:
         Both walls must be visible because this value is used for corridor
         centring, not single-wall following.
         """
-        side_values = self._side_values()
+        sides = self._sides()
 
-        left_reliable = self._left_wall_reliable(side_values)
-        right_reliable = self._right_wall_reliable(side_values)
+        left_ok = self._left_ok(sides)
+        right_ok = self._right_ok(sides)
 
-        if not left_reliable or not right_reliable:
-            self.filtered_left_right_diff = None
+        if not left_ok or not right_ok:
+            self._centre_filtered = None
 
-            self._debug_print(
-                "[Sensors.left_right] unavailable "
-                f"left_ok={left_reliable}, right_ok={right_reliable}"
+            self.logger.trace(
+                "left_right_diff",
+                f"unavailable left_ok={left_ok}, right_ok={right_ok}",
             )
 
             return None
 
-        left_average = (side_values["left_front"] + side_values["left_rear"]) / 2.0
-        right_average = (side_values["right_front"] + side_values["right_rear"]) / 2.0
+        left = (sides.left_front + sides.left_rear) / 2.0
+        right = (sides.right_front + sides.right_rear) / 2.0
+        raw = left - right
 
-        raw_diff = left_average - right_average
-
-        if self.filtered_left_right_diff is None:
-            self.filtered_left_right_diff = raw_diff
+        if self._centre_filtered is None:
+            self._centre_filtered = raw
         else:
-            self.filtered_left_right_diff = (
-                self.left_right_smoothing * self.filtered_left_right_diff
-                + (1.0 - self.left_right_smoothing) * raw_diff
+            self._centre_filtered = (
+                self.config.centre_alpha * self._centre_filtered
+                + (1.0 - self.config.centre_alpha) * raw
             )
 
-        self._debug_print(
-            "[Sensors.left_right] "
-            f"left={left_average:.2f}, "
-            f"right={right_average:.2f}, "
-            f"raw={raw_diff:.2f}, "
-            f"filtered={self.filtered_left_right_diff:.2f}"
+        self.logger.trace(
+            "left_right_diff",
+            f"left={left:.2f}, "
+            f"right={right:.2f}, "
+            f"raw={raw:.2f}, "
+            f"filtered={self._centre_filtered:.2f}",
         )
 
-        return self.filtered_left_right_diff
+        return self._centre_filtered
 
     def front_back_diff(self) -> float | None:
         """
@@ -235,17 +249,24 @@ class Sensors:
         backward. Negative means closer to the back wall, so centring should
         move forward. Returns None unless both walls are reliable.
         """
-        front = self._average_proximity(self.direction_sonars[RelativeDirection.FRONT])
-        back = self._average_proximity(self.direction_sonars[RelativeDirection.BACK])
+        front = self._avg(self.DIR_SONARS[RelativeDirection.FRONT])
+        back = self._avg(self.DIR_SONARS[RelativeDirection.BACK])
 
-        front_reliable = front >= self.side_wall_threshold
-        back_reliable = back >= self.side_wall_threshold
+        front_ok = front >= self.config.blocked
+        back_ok = back >= self.config.blocked
 
-        if not front_reliable or not back_reliable:
+        if not front_ok or not back_ok:
+            self.logger.trace(
+                "front_back_diff",
+                f"unavailable front_ok={front_ok}, back_ok={back_ok}",
+            )
             return None
 
-        return front - back
+        diff = front - back
 
-    def _debug_print(self, message: str) -> None:
-        if self.debug:
-            print(message)
+        self.logger.trace(
+            "front_back_diff",
+            f"front={front:.2f}, back={back:.2f}, diff={diff:.2f}",
+        )
+
+        return diff
