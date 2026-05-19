@@ -26,7 +26,7 @@ class KeyboardController:
         self.curve_ratio = curve_ratio
 
         print(
-            "KeyboardController initialized with drive_speed =",
+            "KeyboardController initialised with drive_speed =",
             drive_speed,
             "and turn_speed =",
             turn_speed,

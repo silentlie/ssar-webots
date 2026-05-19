@@ -13,9 +13,9 @@ class NavigationCommand(Enum):
     TURN_AROUND = 3
     RECOVER = 4
     ALIGN_PARALLEL = 5
-    ALIGN_CENTER_TURN_LEFT = 6
-    ALIGN_CENTER_MOVE = 7
-    ALIGN_CENTER_TURN_BACK = 8
+    ALIGN_CENTRE_TURN_LEFT = 6
+    ALIGN_CENTRE_MOVE = 7
+    ALIGN_CENTRE_TURN_BACK = 8
 
 
 class Navigation:
@@ -32,9 +32,9 @@ class Navigation:
     PARALLEL_FORWARD_DEADBAND = 0.0
     PARALLEL_FORWARD_KP = 0.015
     MAX_PARALLEL_FORWARD_CORRECTION = 0.5
-    SIDE_CENTER_THRESHOLD = 50.0
-    CENTER_MOVE_THRESHOLD = 3.0
-    ALIGN_CENTER_INVALID_LIMIT = 10
+    SIDE_CENTRE_THRESHOLD = 50.0
+    CENTRE_MOVE_THRESHOLD = 3.0
+    ALIGN_CENTRE_INVALID_LIMIT = 10
 
     def __init__(
         self,
@@ -53,7 +53,7 @@ class Navigation:
 
         self.active_command: NavigationCommand | None = None
 
-        self._debug("Navigation initialized")
+        self._debug("Navigation initialised")
 
     def is_idle(self) -> bool:
         return self.active_command is None
@@ -141,6 +141,7 @@ class Navigation:
         return True
 
     def _start_parallel_alignment(self) -> None:
+        """Begin the post-command wall-parallel correction phase."""
         self.wheels.stop()
         self.align_parallel_stable_steps = 0
         self.align_parallel_invalid_steps = 0
@@ -152,34 +153,34 @@ class Navigation:
             f"direction={self.grid_map.robot_direction.name}"
         )
 
-    def _start_center_alignment_if_needed(self) -> None:
+    def _start_centre_alignment_if_needed(self) -> None:
         """
-        After entering a cell, optionally rotate sideways and center in corridor.
+        After entering a cell, optionally rotate sideways and centre in corridor.
 
-        Centering only works when both side walls are visible. Otherwise the robot
+        Centring only works when both side walls are visible. Otherwise the robot
         falls back to parallel alignment against any reliable wall.
         """
         diff = self.sensors.left_right_diff()
 
         if diff is None:
-            self._debug("Center alignment unavailable; starting ALIGN_PARALLEL")
+            self._debug("Centre alignment unavailable; starting ALIGN_PARALLEL")
             self._start_parallel_alignment()
             return
 
-        if abs(diff) <= self.SIDE_CENTER_THRESHOLD:
-            self._debug(f"Center alignment not needed; left_right_diff={diff:.2f}")
+        if abs(diff) <= self.SIDE_CENTRE_THRESHOLD:
+            self._debug(f"Centre alignment not needed; left_right_diff={diff:.2f}")
             self._start_parallel_alignment()
             return
 
-        self.align_center_invalid_steps = 0
-        self.align_center_move_steps = 0
+        self.align_centre_invalid_steps = 0
+        self.align_centre_move_steps = 0
 
         self.odometry.start_action()
-        self.active_command = NavigationCommand.ALIGN_CENTER_TURN_LEFT
+        self.active_command = NavigationCommand.ALIGN_CENTRE_TURN_LEFT
 
         self._debug(
-            f"Started ALIGN_CENTER; left_right_diff={diff:.2f}, "
-            f"threshold={self.SIDE_CENTER_THRESHOLD:.2f}"
+            f"Started ALIGN_CENTRE; left_right_diff={diff:.2f}, "
+            f"threshold={self.SIDE_CENTRE_THRESHOLD:.2f}"
         )
 
     def _proceed_command(self) -> None:
@@ -203,15 +204,15 @@ class Navigation:
             self._proceed_parallel_alignment()
             return
 
-        if self.active_command == NavigationCommand.ALIGN_CENTER_TURN_LEFT:
+        if self.active_command == NavigationCommand.ALIGN_CENTRE_TURN_LEFT:
             self.wheels.turn_left()
             return
 
-        if self.active_command == NavigationCommand.ALIGN_CENTER_MOVE:
-            self._proceed_center_move()
+        if self.active_command == NavigationCommand.ALIGN_CENTRE_MOVE:
+            self._proceed_centre_move()
             return
 
-        if self.active_command == NavigationCommand.ALIGN_CENTER_TURN_BACK:
+        if self.active_command == NavigationCommand.ALIGN_CENTRE_TURN_BACK:
             self.wheels.turn_right()
             return
 
@@ -270,7 +271,7 @@ class Navigation:
     def _proceed_parallel_alignment(self) -> None:
         parallel_error = self.sensors.parallel_error()
 
-        # No reliable wall, so skip calibration.
+        # Wait briefly for a reliable wall reading before skipping this phase.
         if parallel_error is None:
             self.wheels.stop()
             if self.align_parallel_invalid_steps < self.ALIGN_PARALLEL_INVALID_LIMIT:
@@ -296,19 +297,19 @@ class Navigation:
         self.align_parallel_stable_steps = 0
 
         # Sign convention:
-        # positive parallel_error -> nose angled toward left wall -> turn right
-        # negative parallel_error -> nose angled toward right wall -> turn left
+        # positive parallel_error -> nose angled towards left wall -> turn right
+        # negative parallel_error -> nose angled towards right wall -> turn left
         if parallel_error > 0.0:
             self.wheels.turn_right()
         else:
             self.wheels.turn_left()
 
-    def _proceed_center_move(self) -> None:
+    def _proceed_centre_move(self) -> None:
         """
-        Move laterally through a temporary 90-degree turn until centered.
+        Move laterally through a temporary 90-degree turn until centred.
 
         During this phase the map direction is not updated; the matching
-        ALIGN_CENTER_TURN_BACK command restores the physical heading before the
+        ALIGN_CENTRE_TURN_BACK command restores the physical heading before the
         explorer receives another command.
         """
         diff = self.sensors.front_back_diff()
@@ -316,31 +317,31 @@ class Navigation:
         if diff is None:
             self.wheels.stop()
 
-            if self.align_center_invalid_steps < self.ALIGN_CENTER_INVALID_LIMIT:
-                self.align_center_invalid_steps += 1
+            if self.align_centre_invalid_steps < self.ALIGN_CENTRE_INVALID_LIMIT:
+                self.align_centre_invalid_steps += 1
                 self._debug(
-                    f"Center front_back_diff unavailable; "
-                    f"invalid_steps={self.align_center_invalid_steps}"
+                    f"Centre front_back_diff unavailable; "
+                    f"invalid_steps={self.align_centre_invalid_steps}"
                 )
                 return
 
-            self._debug("Center alignment skipped; front_back_diff unavailable")
+            self._debug("Centre alignment skipped; front_back_diff unavailable")
             self.odometry.start_action()
-            self.active_command = NavigationCommand.ALIGN_CENTER_TURN_BACK
+            self.active_command = NavigationCommand.ALIGN_CENTRE_TURN_BACK
             return
 
-        self.align_center_invalid_steps = 0
+        self.align_centre_invalid_steps = 0
 
-        self._debug(f"Center alignment front_back_diff={diff:.2f}")
+        self._debug(f"Centre alignment front_back_diff={diff:.2f}")
 
-        if abs(diff) <= self.CENTER_MOVE_THRESHOLD:
+        if abs(diff) <= self.CENTRE_MOVE_THRESHOLD:
             self.wheels.stop()
             self.odometry.start_action()
-            self.active_command = NavigationCommand.ALIGN_CENTER_TURN_BACK
-            self._debug(f"Center alignment complete; front_back_diff={diff:.2f}")
+            self.active_command = NavigationCommand.ALIGN_CENTRE_TURN_BACK
+            self._debug(f"Centre alignment complete; front_back_diff={diff:.2f}")
             return
 
-        self.align_center_move_steps += 1
+        self.align_centre_move_steps += 1
 
         if diff > 0.0:
             self.wheels.backward()
@@ -360,10 +361,10 @@ class Navigation:
         if self.active_command == NavigationCommand.TURN_AROUND:
             return self.odometry.turn_180_complete()
 
-        if self.active_command == NavigationCommand.ALIGN_CENTER_TURN_LEFT:
+        if self.active_command == NavigationCommand.ALIGN_CENTRE_TURN_LEFT:
             return self.odometry.turn_90_complete()
 
-        if self.active_command == NavigationCommand.ALIGN_CENTER_TURN_BACK:
+        if self.active_command == NavigationCommand.ALIGN_CENTRE_TURN_BACK:
             return self.odometry.turn_90_complete()
 
         return False
@@ -382,7 +383,7 @@ class Navigation:
         if finished_command == NavigationCommand.MOVE_FORWARD:
             self.grid_map.forwarded()
             self.active_command = None
-            self._start_center_alignment_if_needed()
+            self._start_centre_alignment_if_needed()
 
         elif finished_command == NavigationCommand.TURN_LEFT:
             self.grid_map.turned_left()
@@ -396,13 +397,13 @@ class Navigation:
             self.grid_map.turned_around()
             self._start_parallel_alignment()
 
-        elif finished_command == NavigationCommand.ALIGN_CENTER_TURN_LEFT:
+        elif finished_command == NavigationCommand.ALIGN_CENTRE_TURN_LEFT:
             self.odometry.start_action()
-            self.active_command = NavigationCommand.ALIGN_CENTER_MOVE
-            self._debug("Center alignment turn complete; moving to center")
+            self.active_command = NavigationCommand.ALIGN_CENTRE_MOVE
+            self._debug("Centre alignment turn complete; moving to centre")
 
-        elif finished_command == NavigationCommand.ALIGN_CENTER_TURN_BACK:
-            self._debug("Center alignment turn-back complete; starting ALIGN_PARALLEL")
+        elif finished_command == NavigationCommand.ALIGN_CENTRE_TURN_BACK:
+            self._debug("Centre alignment turn-back complete; starting ALIGN_PARALLEL")
             self._start_parallel_alignment()
 
     def _debug(self, message: str) -> None:

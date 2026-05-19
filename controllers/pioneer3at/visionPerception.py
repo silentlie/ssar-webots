@@ -4,6 +4,14 @@ from controller import Camera, Robot
 
 
 class VisionPerception:
+    """
+    Frame-scored colour detector for danger and goal markers.
+
+    Each public check returns True or False only after enough matching frames.
+    Until then it returns None so Explorer can wait instead of acting on one
+    noisy camera frame.
+    """
+
     CAMERA_NAME = "camera"
 
     # Close red danger marker before entering next cell.
@@ -57,6 +65,7 @@ class VisionPerception:
         self._goal_visible_score = 0
 
     def check_danger_ahead(self) -> bool | None:
+        """Detect a close red danger marker in the cell ahead."""
         red_ratio, red_pixels, checked_pixels = self._colour_ratio(
             region_ratio=self.REGION_RATIO,
             matcher=self._is_danger_red,
@@ -91,6 +100,7 @@ class VisionPerception:
         )
 
     def check_goal_ahead(self) -> bool | None:
+        """Detect a close green goal marker before entering the next cell."""
         green_ratio, green_pixels, checked_pixels = self._colour_ratio(
             region_ratio=self.REGION_RATIO,
             matcher=self._is_goal_green,
@@ -125,6 +135,7 @@ class VisionPerception:
         )
 
     def check_goal_visible_ahead(self) -> bool | None:
+        """Detect a farther green goal marker in the forward centre view."""
         green_ratio, green_pixels, checked_pixels = self._colour_ratio(
             region_ratio=self.GOAL_VISIBLE_REGION_RATIO,
             matcher=self._is_goal_green,
@@ -177,6 +188,11 @@ class VisionPerception:
         region_ratio: float,
         matcher: Callable[[int, int, int], bool],
     ) -> tuple[float, int, int]:
+        """
+        Return the fraction and count of matching pixels in a centred region.
+
+        Pixels are sampled with SAMPLE_STEP to keep the controller loop cheap.
+        """
         image = self.camera.getImage()
         width = self.camera.getWidth()
         height = self.camera.getHeight()
@@ -216,6 +232,7 @@ class VisionPerception:
         height: int,
         region_ratio: float,
     ) -> tuple[int, int, int, int]:
+        """Return clamped bounds for a centred image region."""
         region_ratio = max(0.1, min(1.0, region_ratio))
 
         region_width = max(1, int(width * region_ratio))
@@ -256,6 +273,7 @@ class VisionPerception:
         positive_limit: int,
         negative_limit: int,
     ) -> int:
+        """Integrate frame decisions with bounded hysteresis."""
         if candidate:
             score += 1
         else:
@@ -269,6 +287,7 @@ class VisionPerception:
         positive_limit: int,
         negative_limit: int,
     ) -> bool | None:
+        """Return a stable result, or None while evidence is still mixed."""
         if score >= positive_limit:
             return True
 

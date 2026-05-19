@@ -7,19 +7,19 @@ from gridMap import Cell, Direction, Position, move
 class DisplayController:
     """Draws the explored grid map onto the Webots robot display device."""
 
-    BACKGROUND_COLOR = 0x111111
-    WALL_COLOR = 0x000000
-    VISITED_FREE_COLOR = 0xFFFFFF
-    UNVISITED_FREE_COLOR = 0x808080
-    DANGER_COLOR = 0xFF3333
-    GOAL_COLOR = 0x00CC33
+    BACKGROUND_COLOUR = 0x111111
+    WALL_COLOUR = 0x000000
+    VISITED_FREE_COLOUR = 0xFFFFFF
+    UNVISITED_FREE_COLOUR = 0x808080
+    DANGER_COLOUR = 0xFF3333
+    GOAL_COLOUR = 0x00CC33
 
-    PATH_COLOR = 0x8000FF
-    TARGET_COLOR = 0xFF66CC
-    ROBOT_COLOR = 0xFFD700
-    ROBOT_ARROW_COLOR = 0x000000
-    GRID_LINE_COLOR = 0x666666
-    TEXT_COLOR = 0xFFFFFF
+    PATH_COLOUR = 0x8000FF
+    TARGET_COLOUR = 0xFF66CC
+    ROBOT_COLOUR = 0xFFD700
+    ROBOT_ARROW_COLOUR = 0x000000
+    GRID_LINE_COLOUR = 0x666666
+    TEXT_COLOUR = 0xFFFFFF
 
     def __init__(
         self,
@@ -45,7 +45,7 @@ class DisplayController:
         self.offset_y = 0
 
         self._debug(
-            f"DisplayController initialized: width={self.width}, height={self.height}"
+            f"DisplayController initialised: width={self.width}, height={self.height}"
         )
 
     def update(
@@ -105,7 +105,7 @@ class DisplayController:
         cell_from_width = available_width // columns
         cell_from_height = available_height // rows
 
-        # Pure dynamic scale. No min/max clamp.
+        # Let cells shrink as exploration grows so the whole known map stays visible.
         self.cell_size = max(1, min(cell_from_width, cell_from_height))
 
         map_width = columns * self.cell_size
@@ -118,7 +118,7 @@ class DisplayController:
         self.offset_y = self.top_margin + (available_height - map_height) // 2
 
     def _clear(self) -> None:
-        self.display.setColor(self.BACKGROUND_COLOR)
+        self.display.setColor(self.BACKGROUND_COLOUR)
         self.display.fillRectangle(0, 0, self.width, self.height)
 
     def _draw_grid(
@@ -127,14 +127,14 @@ class DisplayController:
         visited: set[Position],
     ) -> None:
         for position, cell in grid.items():
-            color = self._color_for_cell(position, cell, visited)
-            self._draw_cell(position, color, inset=1)
+            colour = self._colour_for_cell(position, cell, visited)
+            self._draw_cell(position, colour, inset=1)
 
     def _draw_path(self, path_positions: list[Position]) -> None:
         for position in path_positions:
             self._draw_cell(
                 position,
-                self.PATH_COLOR,
+                self.PATH_COLOUR,
                 inset=max(2, self.cell_size // 4),
             )
 
@@ -146,7 +146,7 @@ class DisplayController:
         # frontier, so it stays useful while following long paths.
         self._draw_cell(
             path_positions[0],
-            self.TARGET_COLOR,
+            self.TARGET_COLOUR,
             inset=max(2, self.cell_size // 5),
         )
 
@@ -155,14 +155,13 @@ class DisplayController:
         position: Position,
         direction: Direction,
     ) -> None:
-        center_x, center_y = self._cell_center(position)
+        centre_x, centre_y = self._cell_centre(position)
 
         radius = max(4, self.cell_size // 4)
 
-        # Correct Webots usage:
-        # fillOval(center_x, center_y, radius_x, radius_y)
-        self.display.setColor(self.ROBOT_COLOR)
-        self.display.fillOval(center_x, center_y, radius, radius)
+        # Webots fillOval expects centre coordinates plus x/y radii.
+        self.display.setColor(self.ROBOT_COLOUR)
+        self.display.fillOval(centre_x, centre_y, radius, radius)
 
         self._draw_robot_direction_triangle(position, direction)
 
@@ -172,7 +171,7 @@ class DisplayController:
         direction: Direction,
     ) -> None:
         """Draw a compact heading marker inside the robot circle."""
-        center_x, center_y = self._cell_center(position)
+        centre_x, centre_y = self._cell_centre(position)
 
         arrow_length = max(5, self.cell_size // 3)
         arrow_width = max(3, self.cell_size // 6)
@@ -189,15 +188,15 @@ class DisplayController:
         elif direction == Direction.LEFT:
             dx, dy = -1, 0
 
-        # Perpendicular vector.
+        # Perpendicular vector gives the arrow base its width.
         px = -dy
         py = dx
 
-        tip_x = center_x + dx * arrow_length
-        tip_y = center_y + dy * arrow_length
+        tip_x = centre_x + dx * arrow_length
+        tip_y = centre_y + dy * arrow_length
 
-        base_x = center_x + dx * max(2, arrow_length // 3)
-        base_y = center_y + dy * max(2, arrow_length // 3)
+        base_x = centre_x + dx * max(2, arrow_length // 3)
+        base_y = centre_y + dy * max(2, arrow_length // 3)
 
         left_x = base_x + px * arrow_width
         left_y = base_y + py * arrow_width
@@ -205,7 +204,7 @@ class DisplayController:
         right_x = base_x - px * arrow_width
         right_y = base_y - py * arrow_width
 
-        self.display.setColor(self.ROBOT_ARROW_COLOR)
+        self.display.setColor(self.ROBOT_ARROW_COLOUR)
         self.display.fillPolygon(
             [tip_x, left_x, right_x],
             [tip_y, left_y, right_y],
@@ -217,7 +216,7 @@ class DisplayController:
         robot_direction: Direction,
         path: list[Direction],
     ) -> None:
-        self.display.setColor(self.TEXT_COLOR)
+        self.display.setColor(self.TEXT_COLOUR)
 
         next_step = path[0].name if len(path) > 0 else "None"
 
@@ -228,16 +227,19 @@ class DisplayController:
     def _draw_cell(
         self,
         position: Position,
-        color: int,
+        colour: int,
         inset: int = 1,
     ) -> None:
         x, y = self._cell_top_left(position)
-        size = self.cell_size - inset * 2
 
-        self.display.setColor(color)
-        self.display.fillRectangle(x + inset, y + inset, size, size)
+        # Dynamic scaling can make cells tiny; keep the filled rectangle valid.
+        safe_inset = min(max(0, inset), max(0, (self.cell_size - 1) // 2))
+        size = max(1, self.cell_size - safe_inset * 2)
 
-        self.display.setColor(self.GRID_LINE_COLOR)
+        self.display.setColor(colour)
+        self.display.fillRectangle(x + safe_inset, y + safe_inset, size, size)
+
+        self.display.setColor(self.GRID_LINE_COLOUR)
         self.display.drawRectangle(x, y, self.cell_size, self.cell_size)
 
     def _cell_top_left(self, position: Position) -> tuple[int, int]:
@@ -248,7 +250,7 @@ class DisplayController:
 
         return screen_x, screen_y
 
-    def _cell_center(self, position: Position) -> tuple[int, int]:
+    def _cell_centre(self, position: Position) -> tuple[int, int]:
         x, y = self._cell_top_left(position)
         return x + self.cell_size // 2, y + self.cell_size // 2
 
@@ -266,27 +268,27 @@ class DisplayController:
 
         return positions
 
-    def _color_for_cell(
+    def _colour_for_cell(
         self,
         position: Position,
         cell: Cell,
         visited: set[Position],
     ) -> int:
         if cell == Cell.WALL:
-            return self.WALL_COLOR
+            return self.WALL_COLOUR
 
         if cell == Cell.DANGER:
-            return self.DANGER_COLOR
+            return self.DANGER_COLOUR
 
         if cell == Cell.GOAL:
-            return self.GOAL_COLOR
+            return self.GOAL_COLOUR
 
         if cell == Cell.FREE:
             if position in visited:
-                return self.VISITED_FREE_COLOR
-            return self.UNVISITED_FREE_COLOR
+                return self.VISITED_FREE_COLOUR
+            return self.UNVISITED_FREE_COLOUR
 
-        return self.UNVISITED_FREE_COLOR
+        return self.UNVISITED_FREE_COLOUR
 
     def _debug(self, message: str) -> None:
         if self.debug:

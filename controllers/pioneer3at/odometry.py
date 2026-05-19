@@ -23,8 +23,8 @@ class Pose:
         )
 
 
-def normalize_angle(angle: float) -> float:
-    """Normalize an angle to the range [-pi, pi]."""
+def normalise_angle(angle: float) -> float:
+    """Normalise an angle to the range [-pi, pi]."""
     return math.atan2(math.sin(angle), math.cos(angle))
 
 
@@ -80,7 +80,7 @@ class Odometry:
         self.action_start_pose = self.current_pose.copy()
 
         self._debug(
-            "Odometry initialized: "
+            "Odometry initialised: "
             f"tile_size={self.tile_size:.3f}, "
             f"wheel_radius={self.wheel_radius:.3f}, "
             f"axle_length={self.axle_length:.3f}, "
@@ -135,7 +135,7 @@ class Odometry:
 
         self.current_pose.x += delta_distance * math.cos(midpoint_theta)
         self.current_pose.y += delta_distance * math.sin(midpoint_theta)
-        self.current_pose.theta = normalize_angle(self.current_pose.theta + delta_theta)
+        self.current_pose.theta = normalise_angle(self.current_pose.theta + delta_theta)
         self.current_pose.distance += delta_distance
 
     def start_action(self) -> None:
@@ -167,14 +167,14 @@ class Odometry:
         Positive usually means left turn.
         Negative usually means right turn.
         """
-        return normalize_angle(self.current_pose.theta - self.action_start_pose.theta)
+        return normalise_angle(self.current_pose.theta - self.action_start_pose.theta)
 
     def turned_angle(self) -> float:
         """Return absolute angle turned since start_action(), in radians."""
         return abs(self.signed_turned_angle())
 
     def forward_complete(self) -> bool:
-        """Return True when approximately one tile has been traveled."""
+        """Return True when approximately one tile has been travelled."""
         return self.signed_forward_distance() >= self.tile_size - self.forward_tolerance
 
     def turn_90_complete(self) -> bool:
@@ -201,7 +201,7 @@ class Odometry:
         Positive: robot has turned left from action start.
         Negative: robot has turned right from action start.
         """
-        return normalize_angle(self.current_pose.theta - self.action_start_pose.theta)
+        return normalise_angle(self.current_pose.theta - self.action_start_pose.theta)
 
     def recovery_complete(self) -> bool:
         return (

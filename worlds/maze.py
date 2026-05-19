@@ -12,7 +12,7 @@ DANGER = "R"
 def generate_prim_maze(
     width: int, height: int, seed: int | None = None
 ) -> list[list[str]]:
-    """Generate a perfect maze using randomized Prim-style frontier carving."""
+    """Generate a perfect maze using randomised Prim-style frontier carving."""
     if width % 2 == 0:
         width += 1
     if height % 2 == 0:
@@ -99,11 +99,12 @@ def carve_loops(
         maze[y][x] = FREE
 
 
-def count_open_neighbors(
+def count_open_neighbours(
     maze: list[list[str]],
     x: int,
     y: int,
 ) -> int:
+    """Count cardinal FREE neighbours; callers provide non-boundary tiles."""
     count = 0
 
     for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
@@ -136,7 +137,7 @@ def find_dead_end_tiles(maze: list[list[str]]) -> list[tuple[int, int]]:
             if maze[y][x] != FREE:
                 continue
 
-            if count_open_neighbors(maze, x, y) == 1:
+            if count_open_neighbours(maze, x, y) == 1:
                 dead_ends.append((x, y))
 
     return dead_ends
@@ -147,6 +148,7 @@ def percentage_count(
     ratio: float,
     minimum: int = 0,
 ) -> int:
+    """Convert a ratio into a bounded sample count with an optional minimum."""
     if total <= 0 or ratio <= 0:
         return 0
 
@@ -211,7 +213,7 @@ def place_dangers_on_walls(
     danger_ratio: float = 0.10,
     seed: int | None = None,
 ) -> list[tuple[int, int]]:
-    """Replace some wall cells with danger markers in the symbolic maze."""
+    """Replace some wall cells with camera-visible danger markers."""
 
     rng = random.Random(seed)
 

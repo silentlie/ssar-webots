@@ -83,14 +83,14 @@ class Sensors:
     def is_direction_free(self, direction: RelativeDirection) -> bool:
         return not self.is_direction_blocked(direction)
 
-    def scan_neighbors(self) -> dict[RelativeDirection, bool]:
+    def scan_neighbours(self) -> dict[RelativeDirection, bool]:
         """Return whether each adjacent grid direction is clear enough to enter."""
-        neighbors: dict[RelativeDirection, bool] = {}
+        neighbours: dict[RelativeDirection, bool] = {}
 
         for direction in RelativeDirection:
-            neighbors[direction] = self.is_direction_free(direction)
+            neighbours[direction] = self.is_direction_free(direction)
 
-        return neighbors
+        return neighbours
 
     def _side_values(self) -> dict[str, float]:
         return {
@@ -156,6 +156,8 @@ class Sensors:
             and abs(errors[0]) > self.parallel_conflict_threshold
             and abs(errors[1]) > self.parallel_conflict_threshold
         ):
+            # Strong opposite-sign readings usually mean the side walls disagree
+            # too much for a single steering correction to be trustworthy.
             self._debug_print(
                 "[Sensors.parallel] conflict detected, ignoring correction"
             )
@@ -185,7 +187,7 @@ class Sensors:
 
         Positive means the robot is closer to the left wall than the right wall.
         Both walls must be visible because this value is used for corridor
-        centering, not single-wall following.
+        centring, not single-wall following.
         """
         side_values = self._side_values()
 
@@ -227,10 +229,11 @@ class Sensors:
 
     def front_back_diff(self) -> float | None:
         """
-        positive -> closer to front wall, need move backward
-        negative -> closer to back wall, need move forward
+        Estimate fore/aft offset after a temporary 90-degree turn.
 
-        Used after robot rotates 90 degrees for center calibration.
+        Positive means closer to the front wall, so centring should move
+        backward. Negative means closer to the back wall, so centring should
+        move forward. Returns None unless both walls are reliable.
         """
         front = self._average_proximity(self.direction_sonars[RelativeDirection.FRONT])
         back = self._average_proximity(self.direction_sonars[RelativeDirection.BACK])

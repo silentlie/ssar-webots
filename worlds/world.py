@@ -66,10 +66,10 @@ def block(
     y: float,
     size: float,
     height: float,
-    color: str,
+    colour: str,
     collidable: bool = False,
 ) -> str:
-    """Render one colored Webots Box Solid, optionally with collision."""
+    """Render one coloured Webots Box Solid, optionally with collision."""
     bounding_object = ""
 
     if collidable:
@@ -86,7 +86,7 @@ Solid {{
     Shape {{
       appearance Appearance {{
         material Material {{
-          diffuseColor {color}
+          diffuseColor {colour}
           emissiveColor 0 0 0
           ambientIntensity 1
           shininess 0
@@ -109,31 +109,33 @@ def wall_block(x: float, y: float, size: float) -> str:
         y=y,
         size=size,
         height=WALL_HEIGHT,
-        color="0.5 0.5 0.5",
+        colour="0.5 0.5 0.5",
         collidable=True,
     )
 
 
 def danger_block(x: float, y: float, size: float) -> str:
+    """Create a vision-only red marker that does not physically block motion."""
     return block(
         name=f"danger_{x}_{y}",
         x=x,
         y=y,
         size=size,
         height=WALL_HEIGHT,
-        color="1 0 0",
+        colour="1 0 0",
         collidable=False,
     )
 
 
 def goal_block(x: float, y: float, size: float) -> str:
+    """Create a vision-only green marker that does not physically block motion."""
     return block(
         name=f"goal_{x}_{y}",
         x=x,
         y=y,
         size=size,
         height=WALL_HEIGHT,
-        color="0 1 0",
+        colour="0 1 0",
         collidable=False,
     )
 
@@ -166,10 +168,10 @@ def maze_to_world(
     tile_size: float = TILE_SIZE,
 ) -> str:
     """
-    Convert grid coordinates into centered Webots x/y positions.
+    Convert grid coordinates into centred Webots x/y positions.
 
     The maze origin is the top-left symbolic cell; Webots positions are shifted
-    so the generated arena is centered around (0, 0).
+    so the generated arena is centred around (0, 0).
     """
     height = len(maze)
     width = len(maze[0])

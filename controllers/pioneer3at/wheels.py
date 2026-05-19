@@ -84,7 +84,7 @@ class Wheels:
     def curve_left(
         self, speed: float | None = None, turn_ratio: float | None = None
     ) -> None:
-        """Drive forward while slowing the left side by turn_ratio."""
+        """Drive an arc with the left side scaled by turn_ratio."""
         speed = self.default_speed if speed is None else speed
         speed = self.clamp_speed(speed)
         turn_ratio = self.curve_ratio if turn_ratio is None else turn_ratio
@@ -94,7 +94,7 @@ class Wheels:
     def curve_right(
         self, speed: float | None = None, turn_ratio: float | None = None
     ) -> None:
-        """Drive forward while slowing the right side by turn_ratio."""
+        """Drive an arc with the right side scaled by turn_ratio."""
         speed = self.default_speed if speed is None else speed
         speed = self.clamp_speed(speed)
         turn_ratio = self.curve_ratio if turn_ratio is None else turn_ratio

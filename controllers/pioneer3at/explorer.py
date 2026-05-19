@@ -61,7 +61,7 @@ class Explorer:
         self.current_command: NavigationCommand | None = None
         self._scan_goal_directions: list[Direction] | None = None
 
-        self._debug("Explorer initialized")
+        self._debug("Explorer initialised")
 
     def update(self) -> None:
         """
@@ -112,8 +112,8 @@ class Explorer:
 
         # None means this scan cycle has not started yet.
         if self._scan_goal_directions is None:
-            self._scan_neighbors_once()
-            self._scan_goal_directions = self._unvisited_neighbor_directions()
+            self._scan_neighbours_once()
+            self._scan_goal_directions = self._unvisited_neighbour_directions()
             self.perception.reset_goal_visible()
 
             self._debug(
@@ -129,7 +129,8 @@ class Explorer:
             self._set_state(ExplorerState.PLANNING_PATH)
             return
 
-        # Use the end as a stack so finishing a direction stays O(1).
+        # Scan order is not semantically important; use the end as a stack so
+        # finishing a direction stays O(1).
         scan_direction = self._scan_goal_directions[-1]
         scan_position = move(self.grid_map.robot_position, scan_direction)
 
@@ -163,7 +164,7 @@ class Explorer:
 
         if goal_visible_ahead is True:
             self._debug(
-                f"Far goal visible toward {scan_direction.name}; "
+                f"Far goal visible towards {scan_direction.name}; "
                 f"prioritising next cell {scan_position}"
             )
 
@@ -177,36 +178,39 @@ class Explorer:
             return
 
         # goal_visible_ahead is False, so this direction is finished.
-        self._debug(f"No far goal visible toward {scan_direction.name}")
+        self._debug(f"No far goal visible towards {scan_direction.name}")
         self._scan_goal_directions.pop()
         self.perception.reset_goal_visible()
 
-    def _scan_neighbors_once(self) -> None:
+    def _scan_neighbours_once(self) -> None:
         """
         Scan only when the robot is assumed to be centred in a grid cell.
-        """
-        scan = self.sensors.scan_neighbors()
 
-        neighbor_cells: dict[RelativeDirection, Cell] = {
+        This pass updates sonar occupancy. Vision may later promote an
+        enterable cell to DANGER or GOAL.
+        """
+        scan = self.sensors.scan_neighbours()
+
+        neighbour_cells: dict[RelativeDirection, Cell] = {
             direction: Cell.FREE if is_free else Cell.WALL
             for direction, is_free in scan.items()
         }
 
-        self.grid_map.update_neighbors(neighbor_cells)
+        self.grid_map.update_neighbours(neighbour_cells)
 
         self._debug(
             f"Scanned at position={self.grid_map.robot_position}, "
             f"direction={self.grid_map.robot_direction.name}, "
-            f"neighbors={self._format_neighbor_cells(neighbor_cells)}"
+            f"neighbours={self._format_neighbour_cells(neighbour_cells)}"
         )
 
-    def _unvisited_neighbor_directions(self) -> list[Direction]:
+    def _unvisited_neighbour_directions(self) -> list[Direction]:
         """
-        Return absolute directions for neighboring cells that are:
+        Return absolute directions for neighbouring cells that are:
         - not visited
         - enterable according to the current grid map
 
-        These are the directions worth rotating toward for far-goal vision checks.
+        These are the directions worth rotating towards for far-goal vision checks.
         """
         check_order = [
             RelativeDirection.FRONT,
@@ -368,8 +372,6 @@ class Explorer:
                 )
                 return
 
-            # danger_ahead is False here.
-
             if goal_ahead is None:
                 self._debug("Vision goal check uncertain; waiting before MOVE_FORWARD")
                 return
@@ -386,9 +388,7 @@ class Explorer:
                 self.path = [self.grid_map.robot_direction]
                 self.target_position = next_position
 
-            # goal_ahead is True or False.
-            # danger_ahead is confirmed False.
-            # Safe to send MOVE_FORWARD.
+            # Both vision checks are decided, so MOVE_FORWARD can be sent.
 
         accepted = self.navigation.send_command(command)
 
@@ -526,7 +526,7 @@ class Explorer:
     def _format_path(self, path: list[Direction]) -> str:
         return "[" + ", ".join(direction.name for direction in path) + "]"
 
-    def _format_neighbor_cells(
+    def _format_neighbour_cells(
         self,
         cells: dict[RelativeDirection, Cell],
     ) -> str:

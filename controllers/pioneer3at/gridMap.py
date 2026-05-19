@@ -1,3 +1,5 @@
+"""Grid-space data model for exploration and path planning."""
+
 from enum import Enum
 
 # Grid coordinates are (x, y), with y increasing downward on the display.
@@ -62,6 +64,8 @@ class GridMap:
     def __init__(self) -> None:
         self._grid: dict[Position, Cell] = {}
         self._visited: set[Position] = set()
+        # The stack gives recent-first exploration. The set tracks live
+        # frontier membership so discarded entries can be skipped lazily.
         self._frontier_stack: list[Position] = []
         self._frontier_set: set[Position] = set()
         self._robot_position: Position = (0, 0)
@@ -110,7 +114,7 @@ class GridMap:
     def discard_frontier(self, position: Position) -> None:
         self._frontier_set.discard(position)
 
-    def update_neighbors(self, sensors: dict[RelativeDirection, Cell]) -> None:
+    def update_neighbours(self, sensors: dict[RelativeDirection, Cell]) -> None:
         # Frontiers are stack-backed. Adding in reverse priority makes FRONT the
         # next frontier considered, then RIGHT, then LEFT, then BACK.
         update_order = [
@@ -135,6 +139,8 @@ class GridMap:
                 continue
             current_cell = self.get_cell(adjacent_position)
             if current_cell in {Cell.DANGER, Cell.GOAL}:
+                # Vision classifications are more specific than sonar
+                # occupancy, so later scans must not downgrade them.
                 continue
             self.set_cell(adjacent_position, cell_type)
 
