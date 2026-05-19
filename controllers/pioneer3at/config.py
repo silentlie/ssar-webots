@@ -1,9 +1,13 @@
 import math
 from dataclasses import dataclass
 
+from domain import Position
+
 
 @dataclass(frozen=True)
 class SensorConfig:
+    """Thresholds and smoothing factors for sonar-derived readings."""
+
     blocked: float = 900.0
     too_close: float = 980.0
     parallel_conflict: float = 15.0
@@ -13,6 +17,8 @@ class SensorConfig:
 
 @dataclass(frozen=True)
 class PerceptionConfig:
+    """Camera colour-detection thresholds and frame-confirmation limits."""
+
     danger_ratio: float = 0.90
     danger_pixels: int = 80
     danger_confirm: int = 5
@@ -38,6 +44,8 @@ class PerceptionConfig:
 
 @dataclass(frozen=True)
 class OdometryConfig:
+    """Robot geometry and odometry completion tolerances."""
+
     tile_size: float = 1.0
     wheel_radius: float = 0.11
     axle_length: float = 0.585
@@ -48,6 +56,8 @@ class OdometryConfig:
 
 @dataclass(frozen=True)
 class DisplayConfig:
+    """Colours and layout constants for the Webots map display."""
+
     padding: int = 12
     top_margin: int = 32
     text_line_height: int = 12
@@ -67,12 +77,23 @@ class DisplayConfig:
 
 @dataclass(frozen=True)
 class NavigationConfig:
+    """Tuning values for navigation, alignment, and wall-following control."""
+
     parallel_threshold: float = 10.0
     align_parallel_stable_steps: int = 10
     align_parallel_invalid_limit: int = 10
     parallel_forward_deadband: float = 0.0
-    parallel_forward_kp: float = 0.015
+    parallel_forward_kp: float = 0.02
     max_parallel_forward_correction: float = 0.5
     side_centre_threshold: float = 50.0
     centre_move_threshold: float = 3.0
     align_centre_invalid_limit: int = 10
+
+
+@dataclass(frozen=True)
+class ExplorerConfig:
+    """Operator prompt timing and home target for high-level exploration."""
+
+    finished_prompt_interval_seconds: float = 10.0
+    target_found_auto_continue_seconds: float = 10.0
+    home_position: Position = (0, 0)

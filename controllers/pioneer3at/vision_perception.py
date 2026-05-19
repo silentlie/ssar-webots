@@ -16,14 +16,17 @@ class DetectionResult(Enum):
     CLEAR = auto()
     UNCERTAIN = auto()
 
+    @property
     def detected(self) -> bool:
         """Return True when detection has been confirmed."""
         return self == DetectionResult.DETECTED
 
+    @property
     def clear(self) -> bool:
         """Return True when absence has been confirmed."""
         return self == DetectionResult.CLEAR
 
+    @property
     def uncertain(self) -> bool:
         """Return True while evidence is still mixed."""
         return self == DetectionResult.UNCERTAIN

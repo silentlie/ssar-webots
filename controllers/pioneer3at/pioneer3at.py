@@ -8,12 +8,13 @@ from explorer import Explorer
 from grid_map import GridMap
 from navigation import Navigation
 from odometry import Odometry
+from operator_input import OperatorInput
 from sensors import Sensors
 from vision_perception import VisionPerception
 from wheels import Wheels
 
 TILE_SIZE = 1
-DEBUG_LEVEL = DebugLevel.DEBUG
+DEBUG_LEVEL = DebugLevel.INFO
 START_DELAY_SECONDS = 1.0
 
 robot = Robot()
@@ -29,6 +30,7 @@ odometry = Odometry(
 grid_map = GridMap()
 navigation = Navigation(wheels, odometry, grid_map, sensors, debug_level=DEBUG_LEVEL)
 display = DisplayController(robot, debug_level=DEBUG_LEVEL)
+operator_input = OperatorInput(robot)
 explorer = Explorer(
     sensors,
     grid_map,
@@ -46,7 +48,12 @@ while robot.step(timestep) != -1:
     if elapsed_time < START_DELAY_SECONDS:
         wheels.stop()
         continue
-    explorer.update()
+    operator_requests = operator_input.requests()
+    explorer.update(
+        current_time=robot.getTime(),
+        continue_requested=operator_requests.continue_requested,
+        cancel_requested=operator_requests.cancel_requested,
+    )
     snapshot = explorer.snapshot()
     display.update(
         DisplayState(

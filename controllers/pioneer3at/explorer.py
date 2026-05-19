@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
+from math import ceil
 
+from config import ExplorerConfig
 from debug_logger import DebugLevel, DebugLogger
 from grid_map import (
     Cell,
@@ -20,15 +22,20 @@ from vision_perception import VisionPerception
 
 
 class ExplorerState(Enum):
+    """Top-level states for the exploration finite-state machine."""
+
     SCANNING = 0
     PLANNING_PATH = 1
     FOLLOWING_PATH = 2
     RECOVERY = 3
     FINISHED = 4
+    TARGET_FOUND = 5
 
 
 @dataclass(frozen=True)
 class ExplorerSnapshot:
+    """Read-only explorer state exported to the display and observers."""
+
     grid: dict[Position, Cell]
     visited: set[Position]
     robot_position: Position
@@ -41,20 +48,25 @@ class ExplorerSnapshot:
 
 
 class Explorer:
+    """High-level exploration FSM coordinating mapping, planning, and navigation."""
+
     def __init__(
         self,
         sensors: Sensors,
         grid_map: GridMap,
         navigation: Navigation,
         perception: VisionPerception,
+        config: ExplorerConfig = ExplorerConfig(),
         debug: bool = False,
         debug_level: DebugLevel = DebugLevel.NONE,
     ) -> None:
+        """Create an explorer around the shared robot subsystems."""
         self.sensors = sensors
         self.grid_map = grid_map
         self.path_planner = PathPlanner(grid_map)
         self.navigation = navigation
         self.perception = perception
+        self.config = config
         effective_debug_level = DebugLevel.DEBUG if debug else debug_level
         self.logger = DebugLogger("Explorer", effective_debug_level)
 
@@ -67,14 +79,24 @@ class Explorer:
         # phases while commands are in progress.
         self.current_command: NavigationCommand | None = None
         self._scan_goal_directions: list[Direction] | None = None
+        self._finished_prompt_refresh_at: float | None = None
+        self._finished_last_countdown: int | None = None
+        self._target_found_continue_at: float | None = None
+        self._target_found_last_countdown: int | None = None
 
         self.logger.debug("__init__", "Explorer initialised")
 
-    def update(self) -> None:
+    def update(
+        self,
+        current_time: float = 0.0,
+        continue_requested: bool = False,
+        cancel_requested: bool = False,
+    ) -> None:
         """
         Main Explorer FSM update.
 
         Call this once per simulation loop.
+        Pass Webots simulation time so terminal countdowns use the same clock.
 
         Important:
         Explorer calls navigation.update(), so do not also call
@@ -99,7 +121,162 @@ class Explorer:
             return
 
         if self.state == ExplorerState.FINISHED:
+            self._proceed_finished(
+                current_time=current_time,
+                continue_requested=continue_requested,
+                cancel_requested=cancel_requested,
+            )
             return
+
+        if self.state == ExplorerState.TARGET_FOUND:
+            self._proceed_target_found(current_time, continue_requested)
+            return
+
+    def _proceed_finished(
+        self,
+        current_time: float,
+        continue_requested: bool,
+        cancel_requested: bool,
+    ) -> None:
+        """Wait for operator choice after every reachable frontier is explored."""
+        if self._finished_prompt_refresh_at is None:
+            self._reset_finished_prompt(current_time)
+            return
+
+        if cancel_requested:
+            self._return_home_after_finished()
+            return
+
+        if continue_requested:
+            self._reload_after_finished()
+            return
+
+        remaining = max(0, ceil(self._finished_prompt_refresh_at - current_time))
+
+        if remaining != self._finished_last_countdown:
+            self._finished_last_countdown = remaining
+            self.logger.info(
+                "_proceed_finished",
+                "Exploration finished. Space/Enter reloads frontiers; "
+                f"Esc/C returns to {self.config.home_position}. "
+                f"Prompt repeats in {remaining}...",
+            )
+
+        if remaining == 0:
+            self._reset_finished_prompt(current_time)
+
+    def _reload_after_finished(self) -> None:
+        """Reload visited cells as frontiers and resume scanning."""
+        self.logger.info(
+            "_reload_after_finished",
+            "Reloading frontier queue and resuming exploration",
+        )
+        self.grid_map.reload_frontier()
+        self._clear_finished_prompt()
+        self.target_position = None
+        self.path = []
+        self.current_command = None
+        self.perception.reset_all()
+        self._set_state(ExplorerState.SCANNING)
+
+    def _return_home_after_finished(self) -> None:
+        """Plan a path back to the configured home position."""
+        if self.grid_map.robot_position == self.config.home_position:
+            self.logger.info(
+                "_return_home_after_finished",
+                f"Already at home position={self.config.home_position}; resuming scan",
+            )
+            self._clear_finished_prompt()
+            self.target_position = None
+            self.path = []
+            self.current_command = None
+            self.perception.reset_all()
+            self._set_state(ExplorerState.SCANNING)
+            return
+
+        path = self.path_planner.find_path(
+            self.grid_map.robot_position,
+            self.config.home_position,
+        )
+
+        if path is None:
+            self.logger.warn(
+                "_return_home_after_finished",
+                f"Cannot find path from {self.grid_map.robot_position} "
+                f"to {self.config.home_position}",
+            )
+            return
+
+        self.logger.info(
+            "_return_home_after_finished",
+            f"Returning to home position={self.config.home_position}: "
+            f"{self._format_path(path)}",
+        )
+        self._clear_finished_prompt()
+        self.target_position = self.config.home_position
+        self.path = path
+        self.current_command = None
+        self.perception.reset_all()
+        self._set_state(ExplorerState.FOLLOWING_PATH)
+
+    def _reset_finished_prompt(self, current_time: float) -> None:
+        """Start or restart the finished-state prompt countdown."""
+        self._finished_prompt_refresh_at = (
+            current_time + self.config.finished_prompt_interval_seconds
+        )
+        self._finished_last_countdown = None
+
+    def _clear_finished_prompt(self) -> None:
+        """Clear finished-state prompt countdown state."""
+        self._finished_prompt_refresh_at = None
+        self._finished_last_countdown = None
+
+    def _proceed_target_found(
+        self,
+        current_time: float,
+        continue_requested: bool,
+    ) -> None:
+        """Pause at the target, then continue scanning automatically or on input."""
+        if self._target_found_continue_at is None:
+            self._target_found_continue_at = (
+                current_time + self.config.target_found_auto_continue_seconds
+            )
+            self._target_found_last_countdown = None
+            self.logger.info(
+                "_proceed_target_found",
+                "Target found; press Space/Enter to continue now.",
+            )
+
+        if continue_requested:
+            self._continue_after_target_found("operator input")
+            return
+
+        remaining = max(0, ceil(self._target_found_continue_at - current_time))
+
+        if remaining != self._target_found_last_countdown:
+            self._target_found_last_countdown = remaining
+            self.logger.info(
+                "_proceed_target_found",
+                f"Continuing exploration in {remaining}...",
+            )
+
+        if remaining == 0:
+            self._continue_after_target_found("countdown complete")
+            return
+
+    def _continue_after_target_found(self, reason: str) -> None:
+        """Reset the target-found pause and resume scanning from the target cell."""
+        self.logger.info(
+            "_continue_after_target_found",
+            f"Continuing exploration after target found: {reason}",
+        )
+        self._target_found_continue_at = None
+        self._target_found_last_countdown = None
+        self.target_position = None
+        self.path = []
+        self.current_command = None
+        self.perception.reset_all()
+        self._set_state(ExplorerState.SCANNING)
 
     def snapshot(self) -> ExplorerSnapshot:
         """Return the current explorer state without mutating the FSM."""
@@ -126,7 +303,7 @@ class Explorer:
         # None means this scan cycle has not started yet.
         if self._scan_goal_directions is None:
             self._scan_neighbours()
-            self._scan_goal_directions = self._scan_goal_visible()
+            self._scan_goal_directions = self._scan_get_unvisited_neighbours()
             self.perception.reset_goal_visible()
 
             self.logger.debug(
@@ -148,14 +325,6 @@ class Explorer:
         scan_direction = self._scan_goal_directions[-1]
         scan_position = move(self.grid_map.robot_position, scan_direction)
 
-        # If this cell is no longer worth checking, finish this direction.
-        if scan_position in self.grid_map.visited or not self.grid_map.can_enter(
-            scan_position
-        ):
-            self._scan_goal_directions.pop()
-            self.perception.reset_goal_visible()
-            return
-
         # Rotate until facing the direction being checked.
         if self.grid_map.robot_direction != scan_direction:
             command = self._command_for_direction(scan_direction)
@@ -174,13 +343,13 @@ class Explorer:
         # Now facing this neighbour; check far goal.
         goal_visible_ahead = self.perception.check_goal_visible_ahead()
 
-        if goal_visible_ahead.uncertain():
+        if goal_visible_ahead.uncertain:
             self.logger.debug(
                 "_proceed_scanning", "Goal-visible scan uncertain; waiting"
             )
             return
 
-        if goal_visible_ahead.detected():
+        if goal_visible_ahead.detected:
             self.logger.debug(
                 "_proceed_scanning",
                 f"Far goal visible towards {scan_direction.name}; "
@@ -196,7 +365,7 @@ class Explorer:
             self._set_state(ExplorerState.FOLLOWING_PATH)
             return
 
-        # goal_visible_ahead is False, so this direction is finished.
+        # A clear result means this direction is finished for the current scan.
         self.logger.debug(
             "_proceed_scanning",
             f"No far goal visible towards {scan_direction.name}",
@@ -217,13 +386,16 @@ class Explorer:
             self.target_position = None
             self.path = []
             self.current_command = None
-            self.logger.debug("_plan_path", "No frontier left; exploration finished")
+            self.logger.debug(
+                "_proceed_planning_path",
+                "No frontier left; exploration finished",
+            )
             self._set_state(ExplorerState.FINISHED)
             return
 
         if target == self.grid_map.robot_position:
             self.logger.debug(
-                "_plan_path",
+                "_proceed_planning_path",
                 f"Discarding current-position frontier: {target}",
             )
             self.grid_map.discard_frontier(target)
@@ -237,7 +409,7 @@ class Explorer:
 
         if path is None:
             self.logger.debug(
-                "_plan_path",
+                "_proceed_planning_path",
                 f"Frontier unreachable; discarding target={target}",
             )
             self.grid_map.discard_frontier(target)
@@ -251,7 +423,7 @@ class Explorer:
         self.current_command = None
 
         self.logger.debug(
-            "_plan_path",
+            "_proceed_planning_path",
             f"Planned path from {self.grid_map.robot_position} "
             f"to {self.target_position}: {self._format_path(self.path)}",
         )
@@ -270,7 +442,21 @@ class Explorer:
             self._follow_path_finish_command()
 
         if len(self.path) == 0:
-            self.logger.debug("_follow_path", "Path complete; scanning current cell")
+            if self.grid_map.get_cell(self.grid_map.robot_position) == Cell.GOAL:
+                self.logger.debug(
+                    "_follow_path_complete",
+                    f"Target found at position={self.grid_map.robot_position}",
+                )
+                self.target_position = self.grid_map.robot_position
+                self.current_command = None
+                self.perception.reset_all()
+                self._set_state(ExplorerState.TARGET_FOUND)
+                return
+
+            self.logger.debug(
+                "_follow_path_complete",
+                "Path complete; scanning current cell",
+            )
             self.target_position = None
             self.current_command = None
             self._set_state(ExplorerState.SCANNING)
@@ -278,96 +464,14 @@ class Explorer:
 
         target_direction = self.path[0]
         command = self._command_for_direction(target_direction)
+        command = self._follow_path_maybe_override(command)
 
-        # Far goal visibility is only a soft override.
-        # If uncertain or false, keep following the planned path.
-        if command != NavigationCommand.MOVE_FORWARD:
-            goal_visible_ahead = self.perception.check_goal_visible_ahead()
-
-            if goal_visible_ahead.detected():
-                forward_position = move(
-                    self.grid_map.robot_position,
-                    self.grid_map.robot_direction,
-                )
-
-                if self.grid_map.can_enter(forward_position):
-                    self.logger.debug(
-                        "_follow_path",
-                        f"Goal visible ahead; overriding planned {command.name} "
-                        "with MOVE_FORWARD",
-                    )
-
-                    self.path = [self.grid_map.robot_direction]
-                    self.target_position = forward_position
-                    command = NavigationCommand.MOVE_FORWARD
+        if command is None:
+            return
 
         if command == NavigationCommand.MOVE_FORWARD:
-            next_position = move(
-                self.grid_map.robot_position,
-                self.grid_map.robot_direction,
-            )
-
-            # Explorer decides whether the map allows movement.
-            if not self.grid_map.can_enter(next_position):
-                self.logger.debug(
-                    "_follow_path",
-                    f"Map says next cell is not enterable: {next_position}; replanning",
-                )
-                self.path = []
-                self.current_command = None
-                self.perception.reset_all()
-                self._set_state(ExplorerState.PLANNING_PATH)
+            if not self._follow_path_forward_prepare():
                 return
-
-            # Run both checks together so their frame scores build in parallel.
-            danger_ahead = self.perception.check_danger_ahead()
-            goal_ahead = self.perception.check_goal_ahead()
-
-            # Danger has priority over goal.
-            if danger_ahead.detected():
-                self.logger.debug(
-                    "_follow_path",
-                    f"Vision detected danger ahead at {next_position}; "
-                    "marking DANGER and replanning",
-                )
-
-                self.grid_map.set_cell(next_position, Cell.DANGER)
-                self.grid_map.discard_frontier(next_position)
-
-                self.path = []
-                self.current_command = None
-                self.perception.reset_all()
-                self._set_state(ExplorerState.PLANNING_PATH)
-                return
-
-            if danger_ahead.uncertain():
-                self.logger.debug(
-                    "_follow_path",
-                    "Vision danger check uncertain; waiting before MOVE_FORWARD",
-                )
-                return
-
-            if goal_ahead.uncertain():
-                self.logger.debug(
-                    "_follow_path",
-                    "Vision goal check uncertain; waiting before MOVE_FORWARD",
-                )
-                return
-
-            if goal_ahead.detected():
-                self.logger.debug(
-                    "_follow_path",
-                    f"Vision detected goal ahead at {next_position}; marking GOAL",
-                )
-
-                self.grid_map.set_cell(next_position, Cell.GOAL)
-
-                # Make the goal cell the immediate target.
-                # After MOVE_FORWARD completes, the path becomes empty and Explorer scans.
-                self.path = [self.grid_map.robot_direction]
-                self.target_position = next_position
-
-            # Both vision checks are decided, so MOVE_FORWARD can be sent.
 
         accepted = self.navigation.send_command(command)
 
@@ -388,6 +492,106 @@ class Explorer:
             f"direction={self.grid_map.robot_direction.name}",
         )
 
+    def _follow_path_maybe_override(
+        self,
+        command: NavigationCommand,
+    ) -> NavigationCommand | None:
+        """
+        Prefer a visible far goal directly ahead over a planned turn.
+
+        Clear far-goal checks keep following the planned path. Uncertain checks
+        wait so the frame-score filter can confirm or clear the detection.
+        """
+        if command == NavigationCommand.MOVE_FORWARD:
+            return command
+
+        goal_visible_ahead = self.perception.check_goal_visible_ahead()
+
+        if goal_visible_ahead.uncertain:
+            self.logger.debug(
+                "_follow_path_maybe_override",
+                "Goal-visible override uncertain; waiting before planned turn",
+            )
+            return None
+
+        if not goal_visible_ahead.detected:
+            return command
+
+        forward_position = move(
+            self.grid_map.robot_position,
+            self.grid_map.robot_direction,
+        )
+
+        self.logger.debug(
+            "_follow_path_maybe_override",
+            f"Goal visible ahead; overriding planned {command.name} with MOVE_FORWARD",
+        )
+
+        self.path = [self.grid_map.robot_direction]
+        self.target_position = forward_position
+        return NavigationCommand.MOVE_FORWARD
+
+    def _follow_path_forward_prepare(self) -> bool:
+        """
+        Check map and vision constraints before sending MOVE_FORWARD.
+
+        Returns True when MOVE_FORWARD can be sent this tick.
+        """
+        next_position = move(
+            self.grid_map.robot_position,
+            self.grid_map.robot_direction,
+        )
+
+        # Run both checks together so their frame scores build in parallel.
+        danger_ahead = self.perception.check_danger_ahead()
+        goal_ahead = self.perception.check_goal_ahead()
+
+        # Danger has priority over goal.
+        if danger_ahead.detected:
+            self.logger.debug(
+                "_follow_path_forward_prepare",
+                f"Vision detected danger ahead at {next_position}; "
+                "marking DANGER and replanning",
+            )
+
+            self.grid_map.set_cell(next_position, Cell.DANGER)
+            self.grid_map.discard_frontier(next_position)
+
+            self.path = []
+            self.current_command = None
+            self.perception.reset_all()
+            self._set_state(ExplorerState.PLANNING_PATH)
+            return False
+
+        if danger_ahead.uncertain:
+            self.logger.debug(
+                "_follow_path_forward_prepare",
+                "Vision danger check uncertain; waiting before MOVE_FORWARD",
+            )
+            return False
+
+        if goal_ahead.uncertain:
+            self.logger.debug(
+                "_follow_path_forward_prepare",
+                "Vision goal check uncertain; waiting before MOVE_FORWARD",
+            )
+            return False
+
+        if goal_ahead.detected:
+            self.logger.debug(
+                "_follow_path_forward_prepare",
+                f"Vision detected goal ahead at {next_position}; marking GOAL",
+            )
+
+            self.grid_map.set_cell(next_position, Cell.GOAL)
+
+            # Make the goal cell the immediate target.
+            # After MOVE_FORWARD completes, the path becomes empty and Explorer scans.
+            self.path = [self.grid_map.robot_direction]
+            self.target_position = next_position
+
+        return True
+
     def _proceed_recovery(self) -> None:
         """
         Wait until Navigation finishes recovery.
@@ -399,7 +603,7 @@ class Explorer:
             return
 
         self.logger.debug(
-            "_update_recovery",
+            "_proceed_recovery",
             f"Recovery complete at position={self.grid_map.robot_position}; re-scanning",
         )
 
@@ -408,12 +612,6 @@ class Explorer:
         self.current_command = None
 
         self._set_state(ExplorerState.SCANNING)
-
-    def _start_scanning(self) -> None:
-        pass
-
-    def _finished_scanning(self) -> None:
-        pass
 
     def _scan_neighbours(self) -> None:
         """
@@ -432,13 +630,13 @@ class Explorer:
         self.grid_map.update_neighbours(neighbour_cells)
 
         self.logger.debug(
-            "_scan_neighbours_once",
+            "_scan_neighbours",
             f"Scanned at position={self.grid_map.robot_position}, "
             f"direction={self.grid_map.robot_direction.name}, "
             f"neighbours={self._format_neighbour_cells(neighbour_cells)}",
         )
 
-    def _scan_goal_visible(self) -> list[Direction]:
+    def _scan_get_unvisited_neighbours(self) -> list[Direction]:
         """
         Return absolute directions for neighbouring cells that are:
         - not visited
@@ -475,6 +673,12 @@ class Explorer:
         return directions
 
     def _follow_path_check_safety(self) -> None:
+        """
+        Interrupt an in-progress forward move if sonar sees a late obstacle.
+
+        This only runs while Navigation is busy, before the map position has
+        been advanced for the current tile.
+        """
         if self.current_command != NavigationCommand.MOVE_FORWARD:
             return
 
@@ -490,14 +694,14 @@ class Explorer:
             return
 
         self.logger.debug(
-            "_check_safety_while_busy",
+            "_follow_path_check_safety",
             "Safety triggered: front is too close during MOVE_FORWARD; starting recovery",
         )
 
         accepted = self.navigation.send_command(NavigationCommand.RECOVER)
 
         if not accepted:
-            self.logger.debug("_check_safety_while_busy", "Recovery command rejected")
+            self.logger.debug("_follow_path_check_safety", "Recovery command rejected")
             return
 
         self.path = []
@@ -517,7 +721,7 @@ class Explorer:
             if len(self.path) > 0:
                 completed_step = self.path.pop(0)
                 self.logger.debug(
-                    "_handle_finished_command",
+                    "_follow_path_finish_command",
                     f"Forward complete; consumed path step={completed_step.name}, "
                     f"new_position={self.grid_map.robot_position}",
                 )
@@ -528,7 +732,7 @@ class Explorer:
             NavigationCommand.TURN_AROUND,
         }:
             self.logger.debug(
-                "_handle_finished_command",
+                "_follow_path_finish_command",
                 f"Turn complete; now facing {self.grid_map.robot_direction.name}",
             )
 
@@ -557,6 +761,7 @@ class Explorer:
         )
 
     def _set_state(self, new_state: ExplorerState) -> None:
+        """Store a new explorer state and log real transitions."""
         if self.state == new_state:
             return
 
@@ -569,12 +774,14 @@ class Explorer:
         )
 
     def _format_path(self, path: list[Direction]) -> str:
+        """Return a compact debug string for a direction path."""
         return "[" + ", ".join(direction.name for direction in path) + "]"
 
     def _format_neighbour_cells(
         self,
         cells: dict[RelativeDirection, Cell],
     ) -> str:
+        """Return a compact debug string for relative-neighbour cells."""
         return (
             "{ "
             + ", ".join(
