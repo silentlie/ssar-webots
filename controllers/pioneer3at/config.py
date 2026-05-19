@@ -92,8 +92,8 @@ class NavigationConfig:
 
 @dataclass(frozen=True)
 class ExplorerConfig:
-    """Operator prompt timing and home target for high-level exploration."""
+    """Operator timeout timing and home target for high-level exploration."""
 
-    finished_prompt_interval_seconds: float = 10.0
+    finished_return_home_timeout_seconds: float = 10.0
     target_found_auto_continue_seconds: float = 10.0
     home_position: Position = (0, 0)

@@ -79,7 +79,7 @@ class Explorer:
         # phases while commands are in progress.
         self.current_command: NavigationCommand | None = None
         self._scan_goal_directions: list[Direction] | None = None
-        self._finished_prompt_refresh_at: float | None = None
+        self._finished_return_home_at: float | None = None
         self._finished_last_countdown: int | None = None
         self._target_found_continue_at: float | None = None
         self._target_found_last_countdown: int | None = None
@@ -138,9 +138,9 @@ class Explorer:
         continue_requested: bool,
         cancel_requested: bool,
     ) -> None:
-        """Wait for operator choice after every reachable frontier is explored."""
-        if self._finished_prompt_refresh_at is None:
-            self._reset_finished_prompt(current_time)
+        """Wait for operator choice, then return home when the timeout expires."""
+        if self._finished_return_home_at is None:
+            self._start_finished_countdown(current_time)
             return
 
         if cancel_requested:
@@ -151,7 +151,7 @@ class Explorer:
             self._reload_after_finished()
             return
 
-        remaining = max(0, ceil(self._finished_prompt_refresh_at - current_time))
+        remaining = max(0, ceil(self._finished_return_home_at - current_time))
 
         if remaining != self._finished_last_countdown:
             self._finished_last_countdown = remaining
@@ -159,11 +159,12 @@ class Explorer:
                 "_proceed_finished",
                 "Exploration finished. Space/Enter reloads frontiers; "
                 f"Esc/C returns to {self.config.home_position}. "
-                f"Prompt repeats in {remaining}...",
+                f"Returning home in {remaining}...",
             )
 
         if remaining == 0:
-            self._reset_finished_prompt(current_time)
+            self._return_home_after_finished()
+            return
 
     def _reload_after_finished(self) -> None:
         """Reload visited cells as frontiers and resume scanning."""
@@ -172,7 +173,7 @@ class Explorer:
             "Reloading frontier queue and resuming exploration",
         )
         self.grid_map.reload_frontier()
-        self._clear_finished_prompt()
+        self._clear_finished_countdown()
         self.target_position = None
         self.path = []
         self.current_command = None
@@ -186,7 +187,7 @@ class Explorer:
                 "_return_home_after_finished",
                 f"Already at home position={self.config.home_position}; resuming scan",
             )
-            self._clear_finished_prompt()
+            self._clear_finished_countdown()
             self.target_position = None
             self.path = []
             self.current_command = None
@@ -212,23 +213,23 @@ class Explorer:
             f"Returning to home position={self.config.home_position}: "
             f"{self._format_path(path)}",
         )
-        self._clear_finished_prompt()
+        self._clear_finished_countdown()
         self.target_position = self.config.home_position
         self.path = path
         self.current_command = None
         self.perception.reset_all()
         self._set_state(ExplorerState.FOLLOWING_PATH)
 
-    def _reset_finished_prompt(self, current_time: float) -> None:
-        """Start or restart the finished-state prompt countdown."""
-        self._finished_prompt_refresh_at = (
-            current_time + self.config.finished_prompt_interval_seconds
+    def _start_finished_countdown(self, current_time: float) -> None:
+        """Start the finished-state timeout before returning home."""
+        self._finished_return_home_at = (
+            current_time + self.config.finished_return_home_timeout_seconds
         )
         self._finished_last_countdown = None
 
-    def _clear_finished_prompt(self) -> None:
-        """Clear finished-state prompt countdown state."""
-        self._finished_prompt_refresh_at = None
+    def _clear_finished_countdown(self) -> None:
+        """Clear finished-state return-home countdown state."""
+        self._finished_return_home_at = None
         self._finished_last_countdown = None
 
     def _proceed_target_found(
