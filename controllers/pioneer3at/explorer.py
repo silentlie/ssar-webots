@@ -1,6 +1,7 @@
 from enum import Enum
 
-from display_controller import DisplayController
+from debug_logger import DebugLevel
+from display_controller import DisplayController, DisplayState
 from grid_map import (
     Cell,
     Direction,
@@ -12,7 +13,7 @@ from grid_map import (
     opposite_of,
     right_of,
 )
-from navigation import Navigation, NavigationCommand
+from navigation import Navigation, NavigationCommand, NavigationPhase
 from path_planner import PathPlanner
 from sensors import Sensors
 from vision_perception import VisionPerception
@@ -42,6 +43,7 @@ class Explorer:
         display: DisplayController,
         perception: VisionPerception,
         debug: bool = False,
+        debug_level: DebugLevel = DebugLevel.NONE,
     ) -> None:
         self.sensors = sensors
         self.grid_map = grid_map
@@ -49,7 +51,7 @@ class Explorer:
         self.display = display
         self.navigation = navigation
         self.perception = perception
-        self.debug = debug
+        self.debug = debug or debug_level >= DebugLevel.DEBUG
 
         self.state = ExplorerState.SCANNING
 
@@ -76,11 +78,16 @@ class Explorer:
         self.navigation.update()
 
         self.display.update(
-            grid=self.grid_map.grid,
-            visited=self.grid_map.visited,
-            robot_position=self.grid_map.robot_position,
-            robot_direction=self.grid_map.robot_direction,
-            path=self.path,
+            DisplayState(
+                grid=self.grid_map.grid,
+                visited=self.grid_map.visited,
+                robot_position=self.grid_map.robot_position,
+                robot_direction=self.grid_map.robot_direction,
+                path=self.path,
+                explorer_state=self.state.name,
+                target_position=self.target_position,
+                navigation_command=self._navigation_phase_name(),
+            )
         )
 
         if self.state == ExplorerState.SCANNING:
@@ -135,9 +142,8 @@ class Explorer:
         scan_position = move(self.grid_map.robot_position, scan_direction)
 
         # If this cell is no longer worth checking, finish this direction.
-        if (
-            scan_position in self.grid_map.visited
-            or not self.grid_map.can_enter(scan_position)
+        if scan_position in self.grid_map.visited or not self.grid_map.can_enter(
+            scan_position
         ):
             self._scan_goal_directions.pop()
             self.perception.reset_goal_visible()
@@ -415,7 +421,7 @@ class Explorer:
         if self.current_command != NavigationCommand.MOVE_FORWARD:
             return
 
-        if self.navigation.active_command != NavigationCommand.MOVE_FORWARD:
+        if self.navigation.active_phase != NavigationPhase.MOVE_FORWARD:
             return
 
         # Odometry decides whether the robot is already close enough to finishing
@@ -522,6 +528,12 @@ class Explorer:
     def _debug(self, message: str) -> None:
         if self.debug:
             print(f"[Explorer] {message}")
+
+    def _navigation_phase_name(self) -> str | None:
+        active_phase = self.navigation.active_phase
+        if active_phase is None:
+            return None
+        return active_phase.name
 
     def _format_path(self, path: list[Direction]) -> str:
         return "[" + ", ".join(direction.name for direction in path) + "]"

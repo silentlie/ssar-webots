@@ -13,6 +13,7 @@
         "DEADBAND",
         "EXTERNPROTO",
         "initialised",
+        "interruptible",
         "metres",
         "neighbour",
         "neighbouring",

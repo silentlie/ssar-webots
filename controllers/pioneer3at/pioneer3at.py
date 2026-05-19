@@ -2,7 +2,7 @@
 
 from config import OdometryConfig
 from controller import Robot
-from debug_logger import DebugLevel
+from debug_logger import DebugLevel, DebugLogger
 from display_controller import DisplayController
 from explorer import Explorer
 from grid_map import GridMap
@@ -13,8 +13,7 @@ from vision_perception import VisionPerception
 from wheels import Wheels
 
 TILE_SIZE = 1
-DEBUG = False
-DEBUG_LEVEL = DebugLevel.DEBUG if DEBUG else DebugLevel.NONE
+DEBUG_LEVEL = DebugLevel.DEBUG
 START_DELAY_SECONDS = 1.0
 
 robot = Robot()
@@ -28,19 +27,19 @@ odometry = Odometry(
     debug_level=DEBUG_LEVEL,
 )
 grid_map = GridMap()
-navigation = Navigation(wheels, odometry, grid_map, sensors, debug=DEBUG)
-display = DisplayController(robot, debug=DEBUG)
-explorer = Explorer(sensors, grid_map, navigation, display, vision, debug=DEBUG)
-
+navigation = Navigation(wheels, odometry, grid_map, sensors, debug_level=DEBUG_LEVEL)
+display = DisplayController(robot, debug_level=DEBUG_LEVEL)
+explorer = Explorer(
+    sensors, grid_map, navigation, display, vision, debug_level=DEBUG_LEVEL
+)
+logger = DebugLogger("Pioneer3AT", DEBUG_LEVEL)
 start_time = robot.getTime()
-if DEBUG:
-    print(
-        f"[Main] Waiting {START_DELAY_SECONDS} seconds before starting exploration..."
-    )
+logger.debug(
+    f"Robot initialised. Starting exploration in {START_DELAY_SECONDS} seconds..."
+)
 while robot.step(timestep) != -1:
     elapsed_time = robot.getTime() - start_time
     if elapsed_time < START_DELAY_SECONDS:
-        # Let enabled Webots sensors produce stable first readings before motion.
         wheels.stop()
         continue
     explorer.update()
