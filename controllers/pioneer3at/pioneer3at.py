@@ -3,7 +3,7 @@
 from config import OdometryConfig
 from controller import Robot
 from debug_logger import DebugLevel, DebugLogger
-from display_controller import DisplayController
+from display_controller import DisplayController, DisplayState
 from explorer import Explorer
 from grid_map import GridMap
 from navigation import Navigation
@@ -30,7 +30,11 @@ grid_map = GridMap()
 navigation = Navigation(wheels, odometry, grid_map, sensors, debug_level=DEBUG_LEVEL)
 display = DisplayController(robot, debug_level=DEBUG_LEVEL)
 explorer = Explorer(
-    sensors, grid_map, navigation, display, vision, debug_level=DEBUG_LEVEL
+    sensors,
+    grid_map,
+    navigation,
+    vision,
+    debug_level=DEBUG_LEVEL,
 )
 logger = DebugLogger("Pioneer3AT", DEBUG_LEVEL)
 start_time = robot.getTime()
@@ -43,3 +47,20 @@ while robot.step(timestep) != -1:
         wheels.stop()
         continue
     explorer.update()
+    snapshot = explorer.snapshot()
+    display.update(
+        DisplayState(
+            grid=snapshot.grid,
+            visited=snapshot.visited,
+            robot_position=snapshot.robot_position,
+            robot_direction=snapshot.robot_direction,
+            path=snapshot.path,
+            explorer_state=snapshot.state.name,
+            target_position=snapshot.target_position,
+            navigation_command=(
+                None
+                if snapshot.navigation_phase is None
+                else snapshot.navigation_phase.name
+            ),
+        )
+    )
