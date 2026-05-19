@@ -12,8 +12,6 @@ class PathAlgorithm(Enum):
 
 
 class PathPlanner:
-    """Plans paths through cells that GridMap marks as enterable."""
-
     def __init__(
         self,
         grid_map: GridMap,
@@ -30,7 +28,6 @@ class PathPlanner:
         start: Position,
         target: Position,
     ) -> list[Direction] | None:
-        """Return a direction list from start to target, or None if unreachable."""
         if self.algorithm == PathAlgorithm.BFS:
             return self.bfs(start, target)
         if self.algorithm == PathAlgorithm.A_STAR:
@@ -77,8 +74,6 @@ class PathPlanner:
         heapq.heappush(open_heap, (0, 0, 0, start))
         cost_so_far: dict[Position, int] = {start: 0}
         previous: dict[Position, tuple[Position, Direction]] = {}
-        # Heap entries include a monotonic counter so equal priorities never
-        # depend on Position tuple ordering.
         counter = 0
         while open_heap:
             _, current_cost, _, current = heapq.heappop(open_heap)
@@ -116,7 +111,6 @@ class PathPlanner:
         start: Position,
         target: Position,
     ) -> list[Direction]:
-        """Walk parent links backward and return directions from start to target."""
         path: list[Direction] = []
         current = target
         while current != start:
